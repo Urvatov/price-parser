@@ -1,0 +1,8 @@
+node_modules
+build
+profiles
+
+.env
+source/sandbox.ts
+
+*.png

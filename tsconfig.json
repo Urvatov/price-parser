@@ -1,0 +1,12 @@
+{
+	// Visit https://aka.ms/tsconfig to read more about this file
+	"compilerOptions": {
+		"outDir": "./build",
+
+		"module": "nodenext",
+		"target": "esnext",
+		"moduleResolution": "nodenext",
+
+		"strict": true
+	}
+}
