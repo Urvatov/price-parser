@@ -1,52 +1,31 @@
 import "dotenv/config";
-import { getProducts } from "./services/productsService.js";
-import { createOzonSession, parseOzonPrice } from "./parsers/ozonParser.js";
-import { delayRandom } from "./library/time.js";
-import { addProductPrice } from "./services/productPricesService.js";
+import fastify from "fastify";
+import { parserRoutes } from "./routes/parserRoutes.js";
+import { productsRoutes } from "./routes/productsRoutes.js";
 
-async function main() {
-	const products = await getProducts("OZON");
-	console.log(`📦 Найдено товаров для парсинга: ${products.length}`);
-
-	if (products.length === 0) {
-		console.log("Нет товаров в очереди.");
-		return;
-	}
-
-	const { context, page } = await createOzonSession();
-
-	try {
-		for (let i = 0; i < products.length; i++) {
-			const product = products[i];
-			console.log(`\n[${i + 1}/${products.length}] 🔍 "${product.title}"`);
-
-			const price = await parseOzonPrice(page, product.url);
-
-			if (price) {
-				console.log(`   💰 Цена: ${price} ₽`);
-
-				await addProductPrice({
-					productId: product.id,
-					price
-				});
-				console.log(`   💾 Записано в базу данных`);
-			} else {
-				console.log(`   ❌ Цена не найдена`);
-			}
-
-			if (i < products.length - 1) {
-				console.log("   ⏳ Пауза между запросами...");
-				await delayRandom(3500, 1000);
-			}
-		}
-	} finally {
-		await context.close();
-		console.log("\n🏁 Все задачи выполнены, браузер закрыт.");
-		process.exit(0);
-	}
-}
-
-main().catch((err) => {
-	console.error("Критическая ошибка:", err);
+main().catch((error) => {
+	console.error("Критическая ошибка:", error);
 	process.exit(1);
 });
+
+async function main() {
+	await setupServer();
+}
+
+async function setupServer() {
+	const SERVER_PORT = Number(process.env["SERVER_PORT"]);
+	if (!SERVER_PORT) {
+		throw new Error("server port did not find in .env");
+	}
+
+	const server = fastify({
+		logger: true
+	});
+
+	await server.register(productsRoutes, { prefix: "/api/products" });
+	await server.register(parserRoutes, { prefix: "/api/parser" });
+
+	server.listen({ port: SERVER_PORT, host: "0.0.0.0" }, async () => {
+		console.log(`server is running: http://localhost:${SERVER_PORT}`);
+	});
+}

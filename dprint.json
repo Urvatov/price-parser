@@ -1,0 +1,19 @@
+{
+	"$schema": "./dprint.schema.json",
+	"typescript": {
+		"lineWidth": 128,
+		"useTabs": true,
+		"indentWidth": 4,
+		"quoteStyle": "preferDouble",
+		"semiColons": "always",
+		"nextControlFlowPosition": "nextLine",
+		"trailingCommas": "never",
+		"useBraces": "always"
+	},
+	"json": {
+		"useTabs": true,
+		"indentWidth": 4
+	},
+	"excludes": ["**/node_modules", "**/*-lock.json", "**/dist", "**/build", "**/drizzle"],
+	"plugins": ["npm:@dprint/typescript@0.96.1", "npm:@dprint/json@0.25.2", "npm:dprint-plugin-yaml@0.6.0"]
+}
