@@ -1,13 +1,14 @@
-export function getNormalizedOzonProductUrl(input: string): string {
+export function getNormalizedOzonProductUrl(input: string | number): string {
 	const sku = extractOzonSku(input);
 	const normalizedUrl = `https://www.ozon.ru/product/${sku}/`;
 	return normalizedUrl;
 }
 
-export function extractOzonSku(input: string): string {
-	const trimmed = input.trim();
+export function extractOzonSku(input: string | number): string {
+	const raw = String(input);
+	const trimmed = raw.trim();
 
-	// 1. Чистый артикул: "123456789"
+	// 1. Чистый артикул: "123456789" или число 123456789
 	if (/^\d+$/.test(trimmed)) {
 		return trimmed;
 	}
@@ -33,5 +34,5 @@ export function extractOzonSku(input: string): string {
 		return sku;
 	}
 
-	throw new Error(`Не удалось извлечь артикул Ozon из переданной строки: "${input}"`);
+	throw new Error(`Не удалось извлечь артикул Ozon из переданного значения: "${input}"`);
 }

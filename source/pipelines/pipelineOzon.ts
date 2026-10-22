@@ -1,20 +1,11 @@
-// source/pipelines/pipelineOzon.ts
-
 import "dotenv/config";
 import { getNormalizedOzonProductUrl } from "../library/normalize.js";
 import { delayRandom } from "../library/time.js";
 import { createOzonSession, parseOzonProduct } from "../parsers/parserOzon.js";
-import { addProductPrice } from "../services/productPricesService.js";
-import { addProduct, getAllProductsOfMarketplace, getProductByUrl, updateProductDetails } from "../services/productsService.js";
+import { createPrice } from "../services/productPricesService.js";
+import { createProduct, getProductByUrl, getProductsByMarketplace, updateProduct } from "../services/productsService.js";
 
-/**
- * Добавляет новый товар Ozon по ссылке или артикулу.
- * 1. Нормализует ссылку.
- * 2. Если товар уже отслеживается — возвращает его.
- * 3. Если нет — открывает карточку, собирает title, image, sku, price, inStock.
- * 4. Сохраняет товар в products и первую цену в product_prices.
- */
-export async function trackOzonProduct(rawInput: string) {
+export async function trackOzonProduct(rawInput: string | number) {
 	const normalizedUrl = getNormalizedOzonProductUrl(rawInput);
 	const existingProduct = await getProductByUrl(normalizedUrl);
 
@@ -37,7 +28,7 @@ export async function trackOzonProduct(rawInput: string) {
 			throw new Error(`Не удалось определить артикул товара: ${normalizedUrl}`);
 		}
 
-		const createdProduct = await addProduct({
+		const createdProduct = await createProduct({
 			marketplace: "OZON",
 			url: normalizedUrl,
 			sku: parsedData.sku,
@@ -53,7 +44,7 @@ export async function trackOzonProduct(rawInput: string) {
 			initialPrice = parsedData.price;
 		}
 
-		await addProductPrice({
+		await createPrice({
 			productId: createdProduct.id,
 			price: initialPrice,
 			inStock: parsedData.inStock
@@ -68,11 +59,8 @@ export async function trackOzonProduct(rawInput: string) {
 	}
 }
 
-/**
- * Фоновое обновление цен для всех активных товаров Ozon в базе.
- */
 export async function runOzonUpdatePipeline() {
-	const products = await getAllProductsOfMarketplace("OZON");
+	const products = await getProductsByMarketplace("OZON");
 	console.log(`Найдено товаров для парсинга: ${products.length}`);
 
 	if (products.length === 0) {
@@ -103,7 +91,7 @@ export async function runOzonUpdatePipeline() {
 			}
 
 			if (needUpdate) {
-				await updateProductDetails(product.id, updatePayload);
+				await updateProduct(product.id, updatePayload);
 				console.log(`\t- Метаданные обновлены (Артикул: ${parsedData.sku})`);
 			}
 
@@ -111,7 +99,7 @@ export async function runOzonUpdatePipeline() {
 				console.log(`\tВ наличии: ДА`);
 				console.log(`\tЦена: ${parsedData.price} ₽`);
 
-				await addProductPrice({
+				await createPrice({
 					productId: product.id,
 					price: parsedData.price,
 					inStock: true
@@ -121,7 +109,7 @@ export async function runOzonUpdatePipeline() {
 			else {
 				console.log(`\tВ наличии: НЕТ (товар закончился или снят с продажи)`);
 
-				await addProductPrice({
+				await createPrice({
 					productId: product.id,
 					price: 0,
 					inStock: false

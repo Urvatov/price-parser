@@ -1,5 +1,7 @@
 import "dotenv/config";
 import fastify from "fastify";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 import { parserRoutes } from "./routes/parserRoutes.js";
 import { productsRoutes } from "./routes/productsRoutes.js";
 
@@ -22,10 +24,31 @@ async function setupServer() {
 		logger: true
 	});
 
+	await server.register(fastifySwagger, {
+		openapi: {
+			info: {
+				title: "Price Parser API",
+				description: "API для мониторинга и парсинга цен Ozon",
+				version: "1.0.0"
+			}
+		}
+	});
+
+	await server.register(fastifySwaggerUi, {
+		routePrefix: "/docs",
+		uiConfig: {
+			docExpansion: "list",
+			deepLinking: false
+		}
+	});
+
 	await server.register(productsRoutes, { prefix: "/api/products" });
 	await server.register(parserRoutes, { prefix: "/api/parser" });
 
+	await server.ready();
+
 	server.listen({ port: SERVER_PORT, host: "0.0.0.0" }, async () => {
 		console.log(`server is running: http://localhost:${SERVER_PORT}`);
+		console.log(`swagger documentation: http://localhost:${SERVER_PORT}/docs`);
 	});
 }

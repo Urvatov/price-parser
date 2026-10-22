@@ -3,12 +3,12 @@ import db from "../database/client.js";
 import { productPricesTable } from "../database/schema.js";
 import { NewProductPrice, ProductPrice } from "../database/types.js";
 
-export async function addProductPrice(newProductPrice: NewProductPrice): Promise<ProductPrice> {
-	const [addedProductPrice] = await db.insert(productPricesTable).values(newProductPrice).returning();
-	return addedProductPrice;
+export async function createPrice(newPrice: NewProductPrice): Promise<ProductPrice> {
+	const [addedPrice] = await db.insert(productPricesTable).values(newPrice).returning();
+	return addedPrice;
 }
 
-export async function getProductPricesHistory(productId: string): Promise<ProductPrice[]> {
+export async function getPriceHistory(productId: string): Promise<ProductPrice[]> {
 	const prices = await db
 		.select()
 		.from(productPricesTable)
@@ -17,7 +17,7 @@ export async function getProductPricesHistory(productId: string): Promise<Produc
 	return prices;
 }
 
-export async function getLatestProductPrice(productId: string): Promise<ProductPrice | null> {
+export async function getLatestPrice(productId: string): Promise<ProductPrice | null> {
 	const [latestPrice] = await db
 		.select()
 		.from(productPricesTable)

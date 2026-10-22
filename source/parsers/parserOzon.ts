@@ -1,5 +1,3 @@
-// source/parsers/parserOzon.ts
-
 import fs from "fs";
 import path from "path";
 import { BrowserContext, chromium, Page } from "playwright";
@@ -165,7 +163,6 @@ async function parseTitle(page: Page): Promise<string | null> {
 	let titleResult: string | null = null;
 
 	try {
-		// 1. Пробуем извлечь заголовок первого уровня h1
 		const h1Locator = page.locator("h1").first();
 		const h1Count = await h1Locator.count();
 
@@ -180,7 +177,6 @@ async function parseTitle(page: Page): Promise<string | null> {
 			}
 		}
 
-		// 2. Запасной вариант — OpenGraph meta title
 		const ogTitleLocator = page.locator('meta[property="og:title"]').first();
 		const ogTitleCount = await ogTitleLocator.count();
 
@@ -252,7 +248,6 @@ export async function parseOzonProduct(page: Page, url: string): Promise<OzonPar
 		}
 
 		const [inStock, title, image] = await Promise.all([parseInStock(page), parseTitle(page), parseImage(page)]);
-
 		const price = await parsePrice(page, inStock);
 
 		const result: OzonParsedData = {
