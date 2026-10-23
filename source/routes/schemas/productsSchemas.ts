@@ -2,7 +2,17 @@ import { FastifySchema } from "fastify";
 
 export const getProductsSchema: FastifySchema = {
 	tags: ["Products"],
-	summary: "Список всех товаров с последней актуальной ценой",
+	summary: "Список всех товаров (с возможностью запросить последнюю цену)",
+	querystring: {
+		type: "object",
+		properties: {
+			price: {
+				type: "boolean",
+				default: false,
+				description: "Прикреплять ли последнюю актуальную цену к товарам"
+			}
+		}
+	},
 	response: {
 		200: {
 			type: "object",

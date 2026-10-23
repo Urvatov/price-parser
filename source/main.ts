@@ -1,7 +1,7 @@
 import "dotenv/config";
-import fastify from "fastify";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import fastify from "fastify";
 import { parserRoutes } from "./routes/parserRoutes.js";
 import { productsRoutes } from "./routes/productsRoutes.js";
 
