@@ -4,6 +4,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastify from "fastify";
 import { parserRoutes } from "./routes/parserRoutes.js";
 import { productsRoutes } from "./routes/productsRoutes.js";
+import { setupScheduler } from "./services/schedulerService.js";
 
 main().catch((error) => {
 	console.error("Критическая ошибка:", error);
@@ -12,6 +13,7 @@ main().catch((error) => {
 
 async function main() {
 	await setupServer();
+	setupScheduler();
 }
 
 async function setupServer() {
@@ -20,27 +22,15 @@ async function setupServer() {
 		throw new Error("server port did not find in .env");
 	}
 
-	const server = fastify({
-		logger: true
-	});
+	const server = fastify({ logger: true });
 
 	await server.register(fastifySwagger, {
 		openapi: {
-			info: {
-				title: "Price Parser API",
-				description: "API для мониторинга и парсинга цен Ozon",
-				version: "1.0.0"
-			}
+			info: { title: "Price Parser API", description: "API для мониторинга и парсинга цен Ozon", version: "1.0.0" }
 		}
 	});
 
-	await server.register(fastifySwaggerUi, {
-		routePrefix: "/docs",
-		uiConfig: {
-			docExpansion: "list",
-			deepLinking: false
-		}
-	});
+	await server.register(fastifySwaggerUi, { routePrefix: "/docs", uiConfig: { docExpansion: "list", deepLinking: false } });
 
 	await server.register(productsRoutes, { prefix: "/api/products" });
 	await server.register(parserRoutes, { prefix: "/api/parser" });

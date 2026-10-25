@@ -8,14 +8,7 @@ type MarketplaceName = "OZON" | "WILDBERRIES" | "YANDEX_MARKET" | "AVITO";
 export type UpdateProductPayload = Partial<Omit<NewProduct, "id" | "createdAt">>;
 
 export interface ProductWithLatestPrice extends Product {
-	latestPrice: {
-		id: string;
-		productId: string;
-		price: number;
-		currency: string;
-		inStock: boolean;
-		createdAt: Date;
-	} | null;
+	latestPrice: { id: string; productId: string; price: number; currency: string; inStock: boolean; createdAt: Date; } | null;
 }
 
 export async function createProduct(newProduct: NewProduct): Promise<Product> {
@@ -69,10 +62,7 @@ export async function getProductsWithLatestPrice(): Promise<ProductWithLatestPri
 			};
 		}
 
-		const item: ProductWithLatestPrice = {
-			...row.product,
-			latestPrice: latestPrice
-		};
+		const item: ProductWithLatestPrice = { ...row.product, latestPrice: latestPrice };
 		productsWithPrice.push(item);
 	}
 
@@ -105,10 +95,7 @@ export async function getProductByUrl(url: string): Promise<Product | null> {
 export async function updateProduct(productId: string, payload: UpdateProductPayload): Promise<Product | null> {
 	const [updatedProduct] = await db
 		.update(productsTable)
-		.set({
-			...payload,
-			updatedAt: new Date()
-		})
+		.set({ ...payload, updatedAt: new Date() })
 		.where(eq(productsTable.id, productId))
 		.returning();
 

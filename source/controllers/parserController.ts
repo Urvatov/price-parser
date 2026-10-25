@@ -6,9 +6,6 @@ export async function runParserHandler(_request: FastifyRequest, reply: FastifyR
 		console.error("[Pipeline] Ошибка при фоновом обновлении цен:", error);
 	});
 
-	const response = {
-		success: true,
-		message: "Фоновое обновление цен Ozon запущено"
-	};
+	const response = { success: true, message: "Фоновое обновление цен Ozon запущено" };
 	return reply.send(response);
 }

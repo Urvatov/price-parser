@@ -6,11 +6,7 @@ export const getProductsSchema: FastifySchema = {
 	querystring: {
 		type: "object",
 		properties: {
-			price: {
-				type: "boolean",
-				default: false,
-				description: "Прикреплять ли последнюю актуальную цену к товарам"
-			}
+			price: { type: "boolean", default: false, description: "Прикреплять ли последнюю актуальную цену к товарам" }
 		}
 	},
 	response: {
@@ -59,10 +55,7 @@ export const addProductSchema: FastifySchema = {
 		type: "object",
 		required: ["url"],
 		properties: {
-			url: {
-				type: ["string", "number"],
-				description: "Ссылка на страницу товара Ozon или числовой артикул (SKU)"
-			}
+			url: { type: ["string", "number"], description: "Ссылка на страницу товара Ozon или числовой артикул (SKU)" }
 		}
 	},
 	response: {
@@ -104,57 +97,28 @@ export const addProductSchema: FastifySchema = {
 export const getProductByIdSchema: FastifySchema = {
 	tags: ["Products"],
 	summary: "Получить информацию о конкретном товаре по ID",
-	params: {
-		type: "object",
-		required: ["id"],
-		properties: {
-			id: { type: "string" }
-		}
-	}
+	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } }
 };
 
 export const getProductHistorySchema: FastifySchema = {
 	tags: ["Products"],
 	summary: "История изменения цен товара",
-	params: {
-		type: "object",
-		required: ["id"],
-		properties: {
-			id: { type: "string" }
-		}
-	}
+	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } }
 };
 
 export const updateProductStatusSchema: FastifySchema = {
 	tags: ["Products"],
 	summary: "Включить или выключить отслеживание товара",
-	params: {
-		type: "object",
-		required: ["id"],
-		properties: {
-			id: { type: "string" }
-		}
-	},
+	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } },
 	body: {
 		type: "object",
 		required: ["isActive"],
-		properties: {
-			isActive: {
-				type: "boolean",
-				description: "Статус отслеживания товара"
-			}
-		}
+		properties: { isActive: { type: "boolean", description: "Статус отслеживания товара" } }
 	}
 };
 
 export const deleteProductSchema: FastifySchema = {
 	tags: ["Products"],
 	summary: "Удалить товар из базы данных",
-	params: {
-		type: "object",
-		required: ["id"],
-		properties: {
-			id: { type: "string" }
-		}
-	}
+	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } }
 };

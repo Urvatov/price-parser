@@ -9,11 +9,9 @@ export async function createPrice(newPrice: NewProductPrice): Promise<ProductPri
 }
 
 export async function getPriceHistory(productId: string): Promise<ProductPrice[]> {
-	const prices = await db
-		.select()
-		.from(productPricesTable)
-		.where(eq(productPricesTable.productId, productId))
-		.orderBy(desc(productPricesTable.createdAt));
+	const prices = await db.select().from(productPricesTable).where(eq(productPricesTable.productId, productId)).orderBy(
+		desc(productPricesTable.createdAt)
+	);
 	return prices;
 }
 

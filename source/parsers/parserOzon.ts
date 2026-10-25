@@ -60,6 +60,40 @@ export async function createOzonSession(): Promise<{ context: BrowserContext; pa
 	return session;
 }
 
+export async function parseOzonProduct(page: Page, url: string): Promise<OzonParsedData> {
+	let sku: string | null = null;
+	try {
+		sku = extractOzonSku(url);
+	}
+	catch {
+		sku = null;
+	}
+
+	try {
+		await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+
+		if (!sku) {
+			sku = await parseSkuFromPage(page);
+		}
+
+		const [inStock, title, image] = await Promise.all([parseInStock(page), parseTitle(page), parseImage(page)]);
+		const price = await parsePrice(page, inStock);
+
+		const result: OzonParsedData = { sku, title, price, image, inStock };
+
+		return result;
+	}
+	catch (error: unknown) {
+		if (error instanceof Error) {
+			console.error(`[Ozon] Ошибка при парсинге ${url}:`, error.message);
+		}
+
+		const fallbackResult: OzonParsedData = { sku: sku, title: null, price: null, image: null, inStock: false };
+
+		return fallbackResult;
+	}
+}
+
 async function parseInStock(page: Page): Promise<boolean> {
 	let inStockResult = false;
 
@@ -74,6 +108,7 @@ async function parseInStock(page: Page): Promise<boolean> {
 
 		const selector = outOfStockMarkers.map((text) => `text="${text}"`).join(", ");
 		const isOutOfStock = await page.locator(selector).first().isVisible();
+
 		if (isOutOfStock) {
 			inStockResult = false;
 			return inStockResult;
@@ -117,9 +152,9 @@ async function parsePrice(page: Page, inStock: boolean): Promise<number | null> 
 
 		const priceElements = await priceWidget.locator('span:has-text("₽")').allInnerTexts();
 
-		const prices: number[] = priceElements
-			.map((text) => Number(text.replace(/[^\d]/g, "")))
-			.filter((val) => !Number.isNaN(val) && val > 0);
+		const prices: number[] = priceElements.map((text) => Number(text.replace(/[^\d]/g, ""))).filter((val) =>
+			!Number.isNaN(val) && val > 0
+		);
 
 		if (prices.length > 0) {
 			priceResult = Math.min(...prices);
@@ -228,51 +263,5 @@ async function parseImage(page: Page): Promise<string | null> {
 	}
 	catch {
 		return imageResult;
-	}
-}
-
-export async function parseOzonProduct(page: Page, url: string): Promise<OzonParsedData> {
-	let sku: string | null = null;
-	try {
-		sku = extractOzonSku(url);
-	}
-	catch {
-		sku = null;
-	}
-
-	try {
-		await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-
-		if (!sku) {
-			sku = await parseSkuFromPage(page);
-		}
-
-		const [inStock, title, image] = await Promise.all([parseInStock(page), parseTitle(page), parseImage(page)]);
-		const price = await parsePrice(page, inStock);
-
-		const result: OzonParsedData = {
-			sku,
-			title,
-			price,
-			image,
-			inStock
-		};
-
-		return result;
-	}
-	catch (error: unknown) {
-		if (error instanceof Error) {
-			console.error(`[Ozon] Ошибка при парсинге ${url}:`, error.message);
-		}
-
-		const fallbackResult: OzonParsedData = {
-			sku: sku,
-			title: null,
-			price: null,
-			image: null,
-			inStock: false
-		};
-
-		return fallbackResult;
 	}
 }

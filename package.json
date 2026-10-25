@@ -9,7 +9,6 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "tsx --watch source/main.ts",
-		"build": "tsup",
 		"start": "node build/main.js",
 		"typecheck": "tsc --noEmit",
 		"format": "dprint fmt",
@@ -27,6 +26,7 @@
 		"@fastify/swagger-ui": "^6.1.2",
 		"axios": "^1.20.0",
 		"cheerio": "^1.2.0",
+		"croner": "^10.0.1",
 		"dotenv": "^18.0.8",
 		"drizzle-kit": "^0.31.11",
 		"drizzle-orm": "^0.45.4",

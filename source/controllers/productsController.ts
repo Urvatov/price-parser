@@ -1,4 +1,5 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import { FastifyReply } from "fastify";
+import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery } from "../library/http.js";
 import { trackOzonProduct } from "../pipelines/pipelineOzon.js";
 import { getLatestPrice, getPriceHistory } from "../services/productPricesService.js";
 import {
@@ -25,40 +26,22 @@ interface UpdateStatusBody {
 	isActive: boolean;
 }
 
-export async function getProductsHandler(
-	request: FastifyRequest<{ Querystring: GetProductsQuery; }>,
-	reply: FastifyReply
-): Promise<void> {
+export async function getProductsHandler(request: RequestWithQuery<GetProductsQuery>, reply: FastifyReply): Promise<void> {
 	let productsList;
-	if (request.query.price === true) {
-		productsList = await getProductsWithLatestPrice();
-	}
-	else {
-		productsList = await getProducts();
-	}
+	if (request.query.price === true) { productsList = await getProductsWithLatestPrice(); }
+	else { productsList = await getProducts(); }
 
-	const response = {
-		success: true,
-		data: productsList
-	};
+	const response = { success: true, data: productsList };
+
 	return reply.send(response);
 }
 
-export async function addProductHandler(
-	request: FastifyRequest<{ Body: AddProductBody; }>,
-	reply: FastifyReply
-): Promise<void> {
+export async function addProductHandler(request: RequestWithBody<AddProductBody>, reply: FastifyReply): Promise<void> {
 	try {
 		const product = await trackOzonProduct(request.body.url);
 		const latestPrice = await getLatestPrice(product.id);
 
-		const successResponse = {
-			success: true,
-			data: {
-				...product,
-				latestPrice: latestPrice
-			}
-		};
+		const successResponse = { success: true, data: { ...product, latestPrice: latestPrice } };
 		return reply.status(201).send(successResponse);
 	}
 	catch (error: unknown) {
@@ -67,106 +50,66 @@ export async function addProductHandler(
 			errorMessage = error.message;
 		}
 
-		const errorResponse = {
-			success: false,
-			error: errorMessage
-		};
+		const errorResponse = { success: false, error: errorMessage };
 		return reply.status(422).send(errorResponse);
 	}
 }
 
-export async function getProductByIdHandler(
-	request: FastifyRequest<{ Params: ProductParams; }>,
-	reply: FastifyReply
-): Promise<void> {
-	const { id } = request.params;
+export async function getProductByIdHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {
+	const id = request.params.id;
 	const product = await getProductById(id);
 
 	if (!product) {
-		const notFoundResponse = {
-			success: false,
-			error: "Товар не найден"
-		};
+		const notFoundResponse = { success: false, error: "Товар не найден" };
 		return reply.status(404).send(notFoundResponse);
 	}
 
 	const latestPrice = await getLatestPrice(product.id);
-	const response = {
-		success: true,
-		data: {
-			...product,
-			latestPrice: latestPrice
-		}
-	};
+	const response = { success: true, data: { ...product, latestPrice: latestPrice } };
 	return reply.send(response);
 }
 
-export async function getProductHistoryHandler(
-	request: FastifyRequest<{ Params: ProductParams; }>,
-	reply: FastifyReply
-): Promise<void> {
-	const { id } = request.params;
+export async function getProductHistoryHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {
+	const id = request.params.id;
 	const product = await getProductById(id);
 
 	if (!product) {
-		const notFoundResponse = {
-			success: false,
-			error: "Товар не найден"
-		};
+		const notFoundResponse = { success: false, error: "Товар не найден" };
 		return reply.status(404).send(notFoundResponse);
 	}
 
 	const history = await getPriceHistory(id);
-	const response = {
-		success: true,
-		data: {
-			productId: id,
-			history: history
-		}
-	};
+	const response = { success: true, data: { productId: id, history: history } };
+
 	return reply.send(response);
 }
 
 export async function updateProductStatusHandler(
-	request: FastifyRequest<{ Params: ProductParams; Body: UpdateStatusBody; }>,
+	request: RequestWithParamsAndBody<ProductParams, UpdateStatusBody>,
 	reply: FastifyReply
 ): Promise<void> {
-	const { id } = request.params;
+	const id = request.params.id;
 	const updatedProduct = await updateProduct(id, { isActive: request.body.isActive });
 
 	if (!updatedProduct) {
-		const notFoundResponse = {
-			success: false,
-			error: "Товар не найден"
-		};
+		const notFoundResponse = { success: false, error: "Товар не найден" };
 		return reply.status(404).send(notFoundResponse);
 	}
 
-	const response = {
-		success: true,
-		data: updatedProduct
-	};
+	const response = { success: true, data: updatedProduct };
 	return reply.send(response);
 }
 
-export async function deleteProductHandler(
-	request: FastifyRequest<{ Params: ProductParams; }>,
-	reply: FastifyReply
-): Promise<void> {
-	const { id } = request.params;
+export async function deleteProductHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {
+	const id = request.params.id;
 	const deletedProduct = await deleteProduct(id);
 
 	if (!deletedProduct) {
-		const notFoundResponse = {
-			success: false,
-			error: "Товар не найден"
-		};
+		const notFoundResponse = { success: false, error: "Товар не найден" };
 		return reply.status(404).send(notFoundResponse);
 	}
 
-	const response = {
-		success: true,
-		data: deletedProduct
-	};
+	const response = { success: true, data: deletedProduct };
+
 	return reply.send(response);
 }

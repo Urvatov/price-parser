@@ -16,9 +16,7 @@ export const productsTable = pgTable("products", {
 
 export const productPricesTable = pgTable("product_prices", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	productId: uuid("product_id")
-		.references(() => productsTable.id, { onDelete: "cascade" })
-		.notNull(),
+	productId: uuid("product_id").references(() => productsTable.id, { onDelete: "cascade" }).notNull(),
 	price: integer("price").notNull(),
 	currency: varchar("currency", { length: 3 }).default("RUB").notNull(),
 	inStock: boolean("is_in_stock").default(true).notNull(),

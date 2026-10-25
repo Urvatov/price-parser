@@ -6,7 +6,6 @@
 		"indentWidth": 4,
 		"quoteStyle": "preferDouble",
 		"semiColons": "always",
-
 		"nextControlFlowPosition": "nextLine",
 		"trailingCommas": "never",
 		"useBraces": "always"

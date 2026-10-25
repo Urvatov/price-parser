@@ -44,11 +44,7 @@ export async function trackOzonProduct(rawInput: string | number) {
 			initialPrice = parsedData.price;
 		}
 
-		await createPrice({
-			productId: createdProduct.id,
-			price: initialPrice,
-			inStock: parsedData.inStock
-		});
+		await createPrice({ productId: createdProduct.id, price: initialPrice, inStock: parsedData.inStock });
 
 		console.log(`[Ozon] Первая цена зафиксирована: ${initialPrice} ₽ (В наличии: ${parsedData.inStock})`);
 
@@ -99,21 +95,13 @@ export async function runOzonUpdatePipeline() {
 				console.log(`\tВ наличии: ДА`);
 				console.log(`\tЦена: ${parsedData.price} ₽`);
 
-				await createPrice({
-					productId: product.id,
-					price: parsedData.price,
-					inStock: true
-				});
+				await createPrice({ productId: product.id, price: parsedData.price, inStock: true });
 				console.log(`\t- Записано в базу данных`);
 			}
 			else {
 				console.log(`\tВ наличии: НЕТ (товар закончился или снят с продажи)`);
 
-				await createPrice({
-					productId: product.id,
-					price: 0,
-					inStock: false
-				});
+				await createPrice({ productId: product.id, price: 0, inStock: false });
 				console.log(`\t- Статус отсутствия записан в базу данных`);
 			}
 
