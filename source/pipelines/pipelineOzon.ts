@@ -1,9 +1,12 @@
 import "dotenv/config";
+import { shuffle } from "../library/arrays.js";
 import { getNormalizedOzonProductUrl } from "../library/normalize.js";
 import { delayRandom } from "../library/time.js";
 import { createOzonSession, parseOzonProduct } from "../parsers/parserOzon.js";
 import { createPrice } from "../services/productPricesService.js";
 import { createProduct, getProductByUrl, getProductsByMarketplace, updateProduct } from "../services/productsService.js";
+
+let isOzonPipelineRunning = false;
 
 export async function trackOzonProduct(rawInput: string | number) {
 	const normalizedUrl = getNormalizedOzonProductUrl(rawInput);
@@ -56,7 +59,15 @@ export async function trackOzonProduct(rawInput: string | number) {
 }
 
 export async function runOzonUpdatePipeline() {
-	const products = await getProductsByMarketplace("OZON");
+	if (isOzonPipelineRunning) {
+		console.warn("[Pipeline] Попытка запуска занятого пайплайна. Пропускаем.");
+		throw new Error("Пайплайн обновления цен уже выполняется");
+	}
+
+	isOzonPipelineRunning = true;
+	const ozonProducts = await getProductsByMarketplace("OZON");
+	const products = shuffle(ozonProducts);
+
 	console.log(`Найдено товаров для парсинга: ${products.length}`);
 
 	if (products.length === 0) {
@@ -114,5 +125,6 @@ export async function runOzonUpdatePipeline() {
 	finally {
 		await context.close();
 		console.log("\nВсе задачи выполнены, браузер закрыт.");
+		isOzonPipelineRunning = false;
 	}
 }

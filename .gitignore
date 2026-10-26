@@ -4,5 +4,7 @@ profiles
 
 .env
 source/sandbox.ts
+source/extractor.ts
+source/output.md
 
 *.png

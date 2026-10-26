@@ -12,6 +12,7 @@ import {
 
 interface GetProductsQuery {
 	price?: boolean;
+	marketplace?: string;
 }
 
 interface AddProductBody {
@@ -26,10 +27,15 @@ interface UpdateStatusBody {
 	isActive: boolean;
 }
 
+// roadmap: добавить поиск по маркетплейсу
 export async function getProductsHandler(request: RequestWithQuery<GetProductsQuery>, reply: FastifyReply): Promise<void> {
 	let productsList;
-	if (request.query.price === true) { productsList = await getProductsWithLatestPrice(); }
-	else { productsList = await getProducts(); }
+	if (request.query.price === true) {
+		productsList = await getProductsWithLatestPrice();
+	}
+	else {
+		productsList = await getProducts();
+	}
 
 	const response = { success: true, data: productsList };
 

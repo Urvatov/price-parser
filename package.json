@@ -9,9 +9,10 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "tsx --watch source/main.ts",
+		"build": "tsup",
 		"start": "node build/main.js",
 		"typecheck": "tsc --noEmit",
-		"format": "dprint fmt",
+		"format": "dprint fmt --no-gitignore",
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:drop": "drizzle-kit drop",
@@ -37,6 +38,7 @@
 	"devDependencies": {
 		"@types/node": "^26.6.5",
 		"dprint": "^0.64.1",
+		"tsup": "^9.0.0",
 		"tsx": "^4.23.15",
 		"typescript": "^7.0.2",
 		"vitest": "^5.0.5"

@@ -2,7 +2,7 @@ import { Cron } from "croner";
 import { runOzonUpdatePipeline } from "../pipelines/pipelineOzon.js";
 
 export function setupScheduler(): Cron {
-	const defaultPattern = "0 */4 * * *";
+	const defaultPattern = "0 */6 * * *";
 	const cronPattern = process.env["PARSER_CRON_PATTERN"] || defaultPattern;
 
 	const job = new Cron(
