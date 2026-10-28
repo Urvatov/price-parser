@@ -4,7 +4,7 @@ import { type productPricesTable, type productsTable } from "./schema.js";
 export type Product = typeof productsTable.$inferSelect;
 export type NewProduct = typeof productsTable.$inferInsert;
 
-export type Marketplace = typeof productsTable.marketplace.enumValues[number];
+export type Marketplace = Product["marketplace"];
 
 // productPricesTable
 export type ProductPrice = typeof productPricesTable.$inferSelect;
