@@ -1,9 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import db from "../database/client.js";
 import { productPricesTable, productsTable } from "../database/schema.js";
-import type { NewProduct, Product } from "../database/types.js";
-
-type MarketplaceName = "OZON" | "WILDBERRIES" | "YANDEX_MARKET" | "AVITO";
+import type { Marketplace, NewProduct, Product } from "../database/types.js";
 
 export type UpdateProductPayload = Partial<Omit<NewProduct, "id" | "createdAt">>;
 
@@ -69,8 +67,8 @@ export async function getProductsWithLatestPrice(): Promise<ProductWithLatestPri
 	return productsWithPrice;
 }
 
-export async function getProductsByMarketplace(marketplaceName: MarketplaceName): Promise<Product[]> {
-	const products = await db.select().from(productsTable).where(eq(productsTable.marketplace, marketplaceName));
+export async function getProductsByMarketplace(marketplace: Marketplace): Promise<Product[]> {
+	const products = await db.select().from(productsTable).where(eq(productsTable.marketplace, marketplace));
 	return products;
 }
 
