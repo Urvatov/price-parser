@@ -1,10 +1,11 @@
 node_modules
 build
 profiles
+source/sandbox
 
 .env
 source/sandbox.ts
-source/extractor.ts
-source/output.md
+extractor.ts
+output.md
 
 *.png

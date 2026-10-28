@@ -3,6 +3,7 @@ import path from "path";
 import { BrowserContext, chromium, Page } from "playwright";
 import { USER_AGENT } from "../../config.js";
 import { extractOzonSku } from "../library/normalize.js";
+import { delay } from "../library/time.js";
 
 const PROFILE_DIRECTORY = path.resolve("./profiles/ozon");
 
@@ -14,9 +15,14 @@ export interface OzonParsedData {
 	inStock: boolean;
 }
 
-export async function createOzonSession(): Promise<{ context: BrowserContext; page: Page; }> {
-	const hasProfile = fs.existsSync(PROFILE_DIRECTORY);
+interface OzonSession {
+	context: BrowserContext;
+	page: Page;
+}
+
+export async function createOzonSession(): Promise<OzonSession> {
 	let isHeadless = false;
+	const hasProfile = fs.existsSync(PROFILE_DIRECTORY);
 	if (hasProfile) {
 		isHeadless = true;
 	}
@@ -52,11 +58,15 @@ export async function createOzonSession(): Promise<{ context: BrowserContext; pa
 
 	if (!hasProfile) {
 		console.log("Войди в аккаунт Ozon (ожидание 60 сек)...");
-		await new Promise((resolve) => setTimeout(resolve, 60000));
+		await delay(60 * 1000);
 		console.log("Профиль сохранен.");
 	}
 
-	const session = { context, page };
+	const session = {
+		context: context,
+		page: page
+	};
+
 	return session;
 }
 

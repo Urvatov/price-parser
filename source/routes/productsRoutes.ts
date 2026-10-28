@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+
 import {
 	addProductHandler,
 	deleteProductHandler,
@@ -7,6 +8,7 @@ import {
 	getProductsHandler,
 	updateProductStatusHandler
 } from "../controllers/productsController.js";
+
 import {
 	addProductSchema,
 	deleteProductSchema,

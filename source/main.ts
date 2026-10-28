@@ -30,7 +30,13 @@ async function setupServer() {
 		}
 	});
 
-	await server.register(fastifySwaggerUi, { routePrefix: "/docs", uiConfig: { docExpansion: "list", deepLinking: false } });
+	await server.register(fastifySwaggerUi, {
+		routePrefix: "/docs",
+		uiConfig: {
+			docExpansion: "list",
+			deepLinking: false
+		}
+	});
 
 	await server.register(productsRoutes, { prefix: "/api/products" });
 	await server.register(parserRoutes, { prefix: "/api/parser" });

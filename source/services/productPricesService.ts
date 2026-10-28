@@ -27,5 +27,6 @@ export async function getLatestPrice(productId: string): Promise<ProductPrice | 
 	if (latestPrice) {
 		result = latestPrice;
 	}
+
 	return result;
 }
