@@ -6,7 +6,7 @@ import type { Marketplace, NewProduct, Product, ProductPrice } from "../database
 export type UpdateProductPayload = Partial<Omit<NewProduct, "id" | "createdAt">>;
 
 export interface ProductWithLatestPrice extends Product {
-    latestPrice: ProductPrice | null;
+	latestPrice: ProductPrice | null;
 }
 
 export async function createProduct(newProduct: NewProduct): Promise<Product> {
@@ -20,34 +20,34 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductsWithLatestPrice(): Promise<ProductWithLatestPrice[]> {
-    const products = await db.query.productsTable.findMany({
-        with: {
-            prices: {
-                orderBy: (prices, { desc }) => [desc(prices.createdAt)],
-                limit: 1
-            }
-        }
-    });
+	const products = await db.query.productsTable.findMany({
+		with: {
+			prices: {
+				orderBy: (prices, { desc }) => [desc(prices.createdAt)],
+				limit: 1
+			}
+		}
+	});
 
-    const productsWithPrice: ProductWithLatestPrice[] = [];
+	const productsWithPrice: ProductWithLatestPrice[] = [];
 
-    for (const product of products) {
-        const { prices, ...productData } = product;
+	for (const product of products) {
+		const { prices, ...productData } = product;
 
-        let latestPrice = null;
-        if (prices.length > 0) {
-            latestPrice = prices[0];
-        }
+		let latestPrice = null;
+		if (prices.length > 0) {
+			latestPrice = prices[0];
+		}
 
-        const item: ProductWithLatestPrice = {
-            ...productData,
-            latestPrice: latestPrice
-        };
+		const item: ProductWithLatestPrice = {
+			...productData,
+			latestPrice: latestPrice
+		};
 
-        productsWithPrice.push(item);
-    }
+		productsWithPrice.push(item);
+	}
 
-    return productsWithPrice;
+	return productsWithPrice;
 }
 
 export async function getProductsByMarketplace(marketplace: Marketplace): Promise<Product[]> {

@@ -42,14 +42,13 @@ export async function trackOzonProduct(rawInput: string | number) {
 
 		console.log(`[Ozon] Товар успешно добавлен: "${createdProduct.title}" (Артикул: ${createdProduct.sku})`);
 
-		let initialPrice = 0;
-		if (parsedData.price !== null) {
-			initialPrice = parsedData.price;
-		}
+		await createPrice({
+			productId: createdProduct.id,
+			price: parsedData.price,
+			inStock: parsedData.inStock
+		});
 
-		await createPrice({ productId: createdProduct.id, price: initialPrice, inStock: parsedData.inStock });
-
-		console.log(`[Ozon] Первая цена зафиксирована: ${initialPrice} ₽ (В наличии: ${parsedData.inStock})`);
+		console.log(`[Ozon] Первая цена зафиксирована: ${parsedData.price} ₽ (В наличии: ${parsedData.inStock})`);
 
 		return createdProduct;
 	}
@@ -110,10 +109,14 @@ export async function runOzonUpdatePipeline() {
 				console.log(`\t- Записано в базу данных`);
 			}
 			else {
-				console.log(`\tВ наличии: НЕТ (товар закончился или снят с продажи)`);
+				console.log("\tВ наличии: НЕТ (товар закончился или снят с продажи)");
 
-				await createPrice({ productId: product.id, price: 0, inStock: false });
-				console.log(`\t- Статус отсутствия записан в базу данных`);
+				await createPrice({
+					productId: product.id,
+					price: null,
+					inStock: false
+				});
+				console.log("\t- Статус отсутствия записан в базу данных");
 			}
 
 			if (i < products.length - 1) {
