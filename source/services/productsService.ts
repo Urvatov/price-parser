@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import db from "../database/client.js";
 import { productPricesTable, productsTable } from "../database/schema.js";
 import type { Marketplace, NewProduct, Product } from "../database/types.js";
@@ -68,7 +68,15 @@ export async function getProductsWithLatestPrice(): Promise<ProductWithLatestPri
 }
 
 export async function getProductsByMarketplace(marketplace: Marketplace): Promise<Product[]> {
-	const products = await db.select().from(productsTable).where(eq(productsTable.marketplace, marketplace));
+	const products = await db
+		.select()
+		.from(productsTable)
+		.where(
+			and(
+				eq(productsTable.marketplace, marketplace),
+				eq(productsTable.isActive, true)
+			)
+		);
 	return products;
 }
 

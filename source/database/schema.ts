@@ -1,8 +1,11 @@
+import { relations } from "drizzle-orm";
 import { boolean, index, integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
+// enums
 export const marketplaceEnum = pgEnum("marketplace_enum", ["OZON", "WILDBERRIES", "YANDEX_MARKET", "AVITO"]);
 export const priorityEnum = pgEnum("priority_enum", ["HIGH", "MEDIUM", "LOW"]);
 
+// tables
 export const productsTable = pgTable("products", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
 	marketplace: marketplaceEnum("marketplace").notNull(),
@@ -28,3 +31,15 @@ export const productPricesTable = pgTable("product_prices", {
 }, (table) => [
 	index("product_prices_product_id_created_at_idx").on(table.productId, table.createdAt.desc())
 ]);
+
+// relations
+export const productsRelations = relations(productsTable, ({ many }) => ({
+	prices: many(productPricesTable)
+}));
+
+export const productPricesRelations = relations(productPricesTable, ({ one }) => ({
+	product: one(productsTable, {
+		fields: [productPricesTable.productId],
+		references: [productsTable.id]
+	})
+}));
