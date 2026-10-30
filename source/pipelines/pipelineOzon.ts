@@ -14,7 +14,12 @@ export async function trackOzonProduct(rawInput: string | number) {
 
 	if (existingProduct) {
 		console.log(`[Ozon] Товар уже отслеживается: "${existingProduct.title}"`);
-		return existingProduct;
+		const resultProduct = existingProduct;
+		return resultProduct;
+	}
+
+	if (isOzonPipelineRunning) {
+		throw new Error("Парсер Ozon сейчас занят фоновым обновлением. Попробуйте позже.");
 	}
 
 	const { context, page } = await createOzonSession();
@@ -50,36 +55,37 @@ export async function trackOzonProduct(rawInput: string | number) {
 
 		console.log(`[Ozon] Первая цена зафиксирована: ${parsedData.price} ₽ (В наличии: ${parsedData.inStock})`);
 
-		return createdProduct;
+		const resultProduct = createdProduct;
+		return resultProduct;
 	}
 	finally {
 		await context.close();
 	}
 }
 
-export async function runOzonUpdatePipeline() {
+export async function runOzonUpdatePipeline(): Promise<void> {
 	if (isOzonPipelineRunning) {
 		console.warn("[Pipeline] Попытка запуска занятого пайплайна. Пропускаем.");
 		throw new Error("Пайплайн обновления цен уже выполняется");
 	}
 
-	isOzonPipelineRunning = true;
 	const ozonProducts = await getProductsByMarketplace("OZON");
 	const products = shuffle(ozonProducts);
 
 	console.log(`Найдено товаров для парсинга: ${products.length}`);
 
 	if (products.length === 0) {
-		console.log("Нет товаров в очереди.");
+		console.log("Нет активных товаров в очереди.");
 		return;
 	}
 
+	isOzonPipelineRunning = true;
 	const { context, page } = await createOzonSession();
 
 	try {
-		for (let i = 0; i < products.length; i++) {
-			const product = products[i];
-			console.log(`\n[${i + 1}/${products.length}] "${product.title}"`);
+		for (let index = 0; index < products.length; index++) {
+			const product = products[index];
+			console.log(`\n[${index + 1}/${products.length}] "${product.title}"`);
 
 			const parsedData = await parseOzonProduct(page, product.url);
 
@@ -119,7 +125,7 @@ export async function runOzonUpdatePipeline() {
 				console.log("\t- Статус отсутствия записан в базу данных");
 			}
 
-			if (i < products.length - 1) {
+			if (index < products.length - 1) {
 				console.log("\tПауза между запросами...");
 				await delayRandom(3500, 1000);
 			}
