@@ -1,12 +1,12 @@
 import { and, desc, eq } from "drizzle-orm";
 import db from "../database/client.js";
 import { productPricesTable, productsTable } from "../database/schema.js";
-import type { Marketplace, NewProduct, Product } from "../database/types.js";
+import type { Marketplace, NewProduct, Product, ProductPrice } from "../database/types.js";
 
 export type UpdateProductPayload = Partial<Omit<NewProduct, "id" | "createdAt">>;
 
 export interface ProductWithLatestPrice extends Product {
-	latestPrice: { id: string; productId: string; price: number; currency: string; inStock: boolean; createdAt: Date; } | null;
+    latestPrice: ProductPrice | null;
 }
 
 export async function createProduct(newProduct: NewProduct): Promise<Product> {
@@ -20,51 +20,34 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductsWithLatestPrice(): Promise<ProductWithLatestPrice[]> {
-	const latestPricesSubquery = db
-		.selectDistinctOn([productPricesTable.productId], {
-			id: productPricesTable.id,
-			productId: productPricesTable.productId,
-			price: productPricesTable.price,
-			currency: productPricesTable.currency,
-			inStock: productPricesTable.inStock,
-			createdAt: productPricesTable.createdAt
-		})
-		.from(productPricesTable)
-		.orderBy(productPricesTable.productId, desc(productPricesTable.createdAt))
-		.as("latest_prices");
+    const products = await db.query.productsTable.findMany({
+        with: {
+            prices: {
+                orderBy: (prices, { desc }) => [desc(prices.createdAt)],
+                limit: 1
+            }
+        }
+    });
 
-	const rows = await db
-		.select({
-			product: productsTable,
-			priceId: latestPricesSubquery.id,
-			priceProductId: latestPricesSubquery.productId,
-			priceValue: latestPricesSubquery.price,
-			priceCurrency: latestPricesSubquery.currency,
-			priceInStock: latestPricesSubquery.inStock,
-			priceCreatedAt: latestPricesSubquery.createdAt
-		})
-		.from(productsTable)
-		.leftJoin(latestPricesSubquery, eq(productsTable.id, latestPricesSubquery.productId));
+    const productsWithPrice: ProductWithLatestPrice[] = [];
 
-	const productsWithPrice: ProductWithLatestPrice[] = [];
-	for (const row of rows) {
-		let latestPrice = null;
-		if (row.priceId !== null && row.priceProductId !== null && row.priceValue !== null) {
-			latestPrice = {
-				id: row.priceId,
-				productId: row.priceProductId,
-				price: row.priceValue,
-				currency: row.priceCurrency as string,
-				inStock: row.priceInStock as boolean,
-				createdAt: row.priceCreatedAt as Date
-			};
-		}
+    for (const product of products) {
+        const { prices, ...productData } = product;
 
-		const item: ProductWithLatestPrice = { ...row.product, latestPrice: latestPrice };
-		productsWithPrice.push(item);
-	}
+        let latestPrice = null;
+        if (prices.length > 0) {
+            latestPrice = prices[0];
+        }
 
-	return productsWithPrice;
+        const item: ProductWithLatestPrice = {
+            ...productData,
+            latestPrice: latestPrice
+        };
+
+        productsWithPrice.push(item);
+    }
+
+    return productsWithPrice;
 }
 
 export async function getProductsByMarketplace(marketplace: Marketplace): Promise<Product[]> {

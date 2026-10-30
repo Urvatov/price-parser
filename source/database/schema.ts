@@ -29,7 +29,7 @@ export const productPricesTable = pgTable("product_prices", {
 	inStock: boolean("is_in_stock").default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
 }, (table) => [
-	index("product_prices_product_id_created_at_idx").on(table.productId, table.createdAt.desc())
+	index("product_prices_product_id_created_at_index").on(table.productId, table.createdAt.desc())
 ]);
 
 // relations
