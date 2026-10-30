@@ -5,8 +5,8 @@ services:
     container_name: postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: database_user
-      POSTGRES_PASSWORD: database_password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: price_parser
     ports:
       - "5432:5432"

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { PARSER_BASE_DELAY_MS, PARSER_SPREAD_DELAY_MS } from "../../config.js";
 import { shuffle } from "../library/arrays.js";
 import { getNormalizedOzonProductUrl } from "../library/normalize.js";
 import { delayRandom } from "../library/time.js";
@@ -22,7 +23,9 @@ export async function trackOzonProduct(rawInput: string | number) {
 		throw new Error("Парсер Ozon сейчас занят фоновым обновлением. Попробуйте позже.");
 	}
 
-	const { context, page } = await createOzonSession();
+	const ozonSession = await createOzonSession();
+	const context = ozonSession.context;
+	const page = ozonSession.page;
 
 	try {
 		console.log(`[Ozon] Загрузка нового товара: ${normalizedUrl}`);
@@ -127,7 +130,7 @@ export async function runOzonUpdatePipeline(): Promise<void> {
 
 			if (index < products.length - 1) {
 				console.log("\tПауза между запросами...");
-				await delayRandom(3500, 1000);
+				await delayRandom(PARSER_BASE_DELAY_MS, PARSER_SPREAD_DELAY_MS);
 			}
 		}
 	}

@@ -1,11 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { BrowserContext, chromium, Page } from "playwright";
-import { USER_AGENT } from "../../config.js";
+import { OZON_PROFILE_DIRECTORY, USER_AGENT } from "../../config.js";
 import { extractOzonSku } from "../library/normalize.js";
 import { delay } from "../library/time.js";
-
-const PROFILE_DIRECTORY = path.resolve("./profiles/ozon");
 
 export interface OzonParsedData {
 	sku: string | null;
@@ -22,7 +20,7 @@ interface OzonSession {
 
 export async function createOzonSession(): Promise<OzonSession> {
 	let isHeadless = false;
-	const hasProfile = fs.existsSync(PROFILE_DIRECTORY);
+	const hasProfile = fs.existsSync(OZON_PROFILE_DIRECTORY);
 	if (hasProfile) {
 		isHeadless = true;
 	}
@@ -41,7 +39,7 @@ export async function createOzonSession(): Promise<OzonSession> {
 		"--proxy-bypass-list=*"
 	];
 
-	const context = await chromium.launchPersistentContext(PROFILE_DIRECTORY, {
+	const context = await chromium.launchPersistentContext(OZON_PROFILE_DIRECTORY, {
 		headless: isHeadless,
 		viewport: { width: 1280, height: 720 },
 		userAgent: USER_AGENT,

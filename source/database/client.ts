@@ -2,10 +2,10 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema.js";
 
-const DATABASE_URL = process.env["DATABASE_URL"];
-if (!DATABASE_URL) {
-	throw new Error("DATABASE_URL is not found in .env");
+const POSTGRES_URL = process.env["POSTGRES_URL"];
+if (!POSTGRES_URL) {
+	throw new Error("POSTGRES_URL is not found in .env");
 }
 
-const db = drizzle(DATABASE_URL, { schema: schema });
+const db = drizzle(POSTGRES_URL, { schema: schema });
 export default db;
