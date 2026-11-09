@@ -2,7 +2,7 @@ import { ConnectionOptions } from "bullmq";
 import { REDIS_HOST, REDIS_PORT } from "../../config.js";
 
 export const redisConnection: ConnectionOptions = {
-    host: REDIS_HOST,
-    port: REDIS_PORT,
-    maxRetriesPerRequest: null
+	host: REDIS_HOST,
+	port: REDIS_PORT,
+	maxRetriesPerRequest: null
 };

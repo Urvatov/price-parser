@@ -1,9 +1,10 @@
 import { FastifyReply } from "fastify";
 import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery } from "../library/http.js";
-import { trackOzonProduct } from "../pipelines/pipelineOzon.js";
+import { extractOzonSku, getNormalizedOzonProductUrl } from "../library/normalize.js";
+import { parserQueue } from "../queues/parserQueue.js";
 import { getLatestPrice, getPriceHistory } from "../services/productPricesService.js";
 import {
-    createProduct,
+	createProduct,
 	deleteProduct,
 	getProductById,
 	getProductByUrl,
@@ -11,8 +12,6 @@ import {
 	getProductsWithLatestPrice,
 	updateProduct
 } from "../services/productsService.js";
-import { getNormalizedOzonProductUrl } from "../library/normalize.js";
-import { parserQueue } from "../queues/parserQueue.js";
 
 interface GetProductsQuery {
 	price?: boolean;
@@ -47,56 +46,58 @@ export async function getProductsHandler(request: RequestWithQuery<GetProductsQu
 }
 
 export async function addProductHandler(request: RequestWithBody<AddProductBody>, reply: FastifyReply): Promise<void> {
-    try {
-        const normalizedUrl = getNormalizedOzonProductUrl(request.body.url);
-        const existingProduct = await getProductByUrl(normalizedUrl);
+	try {
+		const normalizedUrl = getNormalizedOzonProductUrl(request.body.url);
+		const existingProduct = await getProductByUrl(normalizedUrl);
 
-        if (existingProduct) {
-            const conflictResponse = {
-                success: true,
-                message: "Товар уже отслеживается",
-                data: existingProduct
-            };
-            return reply.send(conflictResponse);
-        }
+		if (existingProduct) {
+			const conflictResponse = {
+				success: true,
+				message: "Товар уже отслеживается",
+				data: existingProduct
+			};
+			return reply.send(conflictResponse);
+		}
 
-        const newProduct = await createProduct({
-            marketplace: "OZON",
-            url: normalizedUrl,
-            sku: "",
-            title: "Загрузка данных...",
-            isActive: true
-        });
+		const sku = extractOzonSku(normalizedUrl);
 
-        await parserQueue.add(
-            `scrape-product-${newProduct.id}`,
-            {
-                type: "SCRAPE_SINGLE_PRODUCT",
-                productId: newProduct.id,
-                url: normalizedUrl
-            },
-            {
-                jobId: `scrape:${newProduct.id}`
-            }
-        );
+		const newProduct = await createProduct({
+			marketplace: "OZON",
+			url: normalizedUrl,
+			sku: sku,
+			title: "Загрузка данных...",
+			isActive: true
+		});
 
-        const response = {
-            success: true,
-            message: "Товар поставлен в очередь на обработку",
-            data: newProduct
-        };
+		await parserQueue.add(
+			`scrape-product-${newProduct.id}`,
+			{
+				type: "SCRAPE_SINGLE_PRODUCT",
+				productId: newProduct.id,
+				url: normalizedUrl
+			},
+			{
+				jobId: `scrape:${newProduct.id}`
+			}
+		);
 
-        return reply.status(202).send(response);
-    }
-    catch (error: unknown) {
-        let errorMessage = "Ошибка при добавлении товара";
-        if (error instanceof Error) {
-            errorMessage = error.message;
-        }
+		const response = {
+			success: true,
+			message: "Товар поставлен в очередь на обработку",
+			data: newProduct
+		};
 
-        const errorResponse = { success: false, error: errorMessage };
-        return reply.status(422).send(errorResponse);
-    }
+		return reply.status(202).send(response);
+	}
+	catch (error: unknown) {
+		let errorMessage = "Ошибка при добавлении товара";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
+
+		const errorResponse = { success: false, error: errorMessage };
+		return reply.status(422).send(errorResponse);
+	}
 }
 
 export async function getProductByIdHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {

@@ -35,6 +35,7 @@ export async function createOzonSession(): Promise<OzonSession> {
 	const args: string[] = [
 		"--disable-blink-features=AutomationControlled",
 		"--no-sandbox",
+		"--disable-setuid-sandbox",
 		"--proxy-server=direct://",
 		"--proxy-bypass-list=*"
 	];
@@ -44,6 +45,12 @@ export async function createOzonSession(): Promise<OzonSession> {
 		viewport: { width: 1280, height: 720 },
 		userAgent: USER_AGENT,
 		args: args
+	});
+
+	await context.addInitScript(() => {
+		Object.defineProperty(navigator, "webdriver", {
+			get: () => undefined
+		});
 	});
 
 	let page: Page;
@@ -79,6 +86,11 @@ export async function parseOzonProduct(page: Page, url: string): Promise<OzonPar
 
 	try {
 		await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+		const isPriceWidgetVisible = await page.locator('[data-widget="webPrice"]').isVisible();
+		if (!isPriceWidgetVisible) {
+			await page.screenshot({ path: "ozon_debug.png", fullPage: true });
+			console.log("[Ozon Debug] Виджет цены не найден. Скриншот ozon_debug.png сохранен.");
+		}
 
 		if (!sku) {
 			sku = await parseSkuFromPage(page);
