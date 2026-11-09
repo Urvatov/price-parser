@@ -3,12 +3,16 @@ import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWi
 import { trackOzonProduct } from "../pipelines/pipelineOzon.js";
 import { getLatestPrice, getPriceHistory } from "../services/productPricesService.js";
 import {
+    createProduct,
 	deleteProduct,
 	getProductById,
+	getProductByUrl,
 	getProducts,
 	getProductsWithLatestPrice,
 	updateProduct
 } from "../services/productsService.js";
+import { getNormalizedOzonProductUrl } from "../library/normalize.js";
+import { parserQueue } from "../queues/parserQueue.js";
 
 interface GetProductsQuery {
 	price?: boolean;
@@ -43,22 +47,56 @@ export async function getProductsHandler(request: RequestWithQuery<GetProductsQu
 }
 
 export async function addProductHandler(request: RequestWithBody<AddProductBody>, reply: FastifyReply): Promise<void> {
-	try {
-		const product = await trackOzonProduct(request.body.url);
-		const latestPrice = await getLatestPrice(product.id);
+    try {
+        const normalizedUrl = getNormalizedOzonProductUrl(request.body.url);
+        const existingProduct = await getProductByUrl(normalizedUrl);
 
-		const successResponse = { success: true, data: { ...product, latestPrice: latestPrice } };
-		return reply.status(201).send(successResponse);
-	}
-	catch (error: unknown) {
-		let errorMessage = "Ошибка при добавлении товара";
-		if (error instanceof Error) {
-			errorMessage = error.message;
-		}
+        if (existingProduct) {
+            const conflictResponse = {
+                success: true,
+                message: "Товар уже отслеживается",
+                data: existingProduct
+            };
+            return reply.send(conflictResponse);
+        }
 
-		const errorResponse = { success: false, error: errorMessage };
-		return reply.status(422).send(errorResponse);
-	}
+        const newProduct = await createProduct({
+            marketplace: "OZON",
+            url: normalizedUrl,
+            sku: "",
+            title: "Загрузка данных...",
+            isActive: true
+        });
+
+        await parserQueue.add(
+            `scrape-product-${newProduct.id}`,
+            {
+                type: "SCRAPE_SINGLE_PRODUCT",
+                productId: newProduct.id,
+                url: normalizedUrl
+            },
+            {
+                jobId: `scrape:${newProduct.id}`
+            }
+        );
+
+        const response = {
+            success: true,
+            message: "Товар поставлен в очередь на обработку",
+            data: newProduct
+        };
+
+        return reply.status(202).send(response);
+    }
+    catch (error: unknown) {
+        let errorMessage = "Ошибка при добавлении товара";
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+
+        const errorResponse = { success: false, error: errorMessage };
+        return reply.status(422).send(errorResponse);
+    }
 }
 
 export async function getProductByIdHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {

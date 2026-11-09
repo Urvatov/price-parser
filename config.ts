@@ -17,3 +17,7 @@ export const LOW_PRIORITY_INTERVAL = null;
 export const OZON_PROFILE_DIRECTORY = process.env["OZON_PROFILE_DIR"] || path.resolve("./profiles/ozon");
 export const PARSER_BASE_DELAY_MS = Number(process.env["PARSER_BASE_DELAY_MS"]) || 3500;
 export const PARSER_SPREAD_DELAY_MS = Number(process.env["PARSER_SPREAD_DELAY_MS"]) || 1000;
+
+export const REDIS_HOST: string = process.env["REDIS_HOST"] || "127.0.0.1";
+export const REDIS_PORT: number = Number(process.env["REDIS_PORT"]) || 6379;
+export const PARSER_CRON_PATTERN: string = process.env["PARSER_CRON_PATTERN"] || "0 */6 * * *";

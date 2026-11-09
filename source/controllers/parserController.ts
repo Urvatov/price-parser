@@ -1,11 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { runOzonUpdatePipeline } from "../pipelines/pipelineOzon.js";
+import { parserQueue } from "../queues/parserQueue.js";
 
 export async function runParserHandler(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
-	runOzonUpdatePipeline().catch((error: unknown) => {
-		console.error("[Pipeline] Ошибка при фоновом обновлении цен:", error);
-	});
+    await parserQueue.add("manual-ozon-update", {
+        type: "SCHEDULED_UPDATE_PIPELINE",
+        marketplace: "OZON"
+    });
 
-	const response = { success: true, message: "Фоновое обновление цен Ozon запущено" };
-	return reply.send(response);
+    const response = { success: true, message: "Фоновое обновление цен Ozon добавлено в очередь" };
+    return reply.send(response);
 }
