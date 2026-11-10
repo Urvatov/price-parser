@@ -22,7 +22,8 @@
 		"**/bun.lockb",
 		"**/dist",
 		"**/build",
-		"**/drizzle"
+		"**/drizzle",
+		"**/profiles"
 	],
 	"plugins": [
 		"npm:@dprint/typescript@0.96.1",

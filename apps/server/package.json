@@ -1,0 +1,48 @@
+{
+	"name": "price-parser-server",
+	"version": "0.0.1",
+	"private": true,
+	"description": "",
+	"keywords": [],
+	"license": "MIT",
+	"author": "urvatov",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"dev": "tsx --watch source/main.ts",
+		"build": "tsup",
+		"start": "node build/main.js",
+		"typecheck": "tsc --noEmit",
+		"format": "dprint fmt --no-gitignore",
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:drop": "drizzle-kit drop",
+		"db:migrate": "drizzle-kit migrate",
+		"db:studio": "drizzle-kit studio",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"test:ui": "vitest --ui"
+	},
+	"dependencies": {
+		"@fastify/cors": "^11.3.1",
+		"@fastify/swagger": "^9.9.2",
+		"@fastify/swagger-ui": "^6.1.2",
+		"axios": "^1.20.0",
+		"bullmq": "^6.7.2",
+		"dotenv": "^18.0.8",
+		"drizzle-kit": "^0.31.11",
+		"drizzle-orm": "^0.45.4",
+		"fastify": "^5.12.7",
+		"ioredis": "^6.0.0",
+		"playwright": "^1.64.1",
+		"postgres": "^3.4.9"
+	},
+	"devDependencies": {
+		"@types/node": "^26.6.5",
+		"dprint": "^0.64.1",
+		"tsup": "^9.0.0",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2",
+		"vitest": "^5.0.5"
+	}
+}

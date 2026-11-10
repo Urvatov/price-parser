@@ -1,11 +1,47 @@
-node_modules
-build
-profiles
-source/sandbox
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
+# Build outputs
+build/
+dist/
+dist-ssr/
+apps/*/build/
+apps/*/dist/
+apps/*/dist-ssr/
+
+# Environment files
 .env
+.env.*
+!.env.example
+apps/*/.env
+apps/*/.env.*
+!apps/*/.env.example
+
+# Profiles & Runtime data
+profiles/
+apps/*/profiles/
+ozon_debug.png
+*.png
+
+# Sandbox & Temporary
+source/sandbox
 source/sandbox.ts
+apps/*/source/sandbox
+apps/*/source/sandbox.ts
 extractor.ts
 output.md
+logs/
+*.log
 
-*.png
+# IDE & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
