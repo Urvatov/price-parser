@@ -2,26 +2,7 @@
 	import axios from "axios";
 	import { onMount } from "svelte";
 	import { Link } from "svelte-routing";
-
-	interface ProductPriceRecord {
-		id: string;
-		price: number | null;
-		inStock: boolean;
-	}
-
-	interface ProductListItem {
-		id: string;
-		title: string;
-		marketplace: string;
-		image: string | null;
-		isActive: boolean;
-		latestPrice: ProductPriceRecord | null;
-	}
-
-	interface ProductsApiResponse {
-		success: boolean;
-		data: ProductListItem[];
-	}
+	import type { ApiResponse, ProductListItem } from "@price-parser/types";
 
 	let productsList = $state<ProductListItem[]>([]);
 	let isLoading = $state(true);
@@ -32,7 +13,7 @@
 		errorMessage = "";
 
 		try {
-			const response = await axios.get<ProductsApiResponse>("/api/products?price=true");
+			const response = await axios.get<ApiResponse<ProductListItem[]>>("/api/products?price=true");
 
 			if (response.data.success) {
 				productsList = response.data.data;

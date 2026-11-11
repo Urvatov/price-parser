@@ -10,6 +10,7 @@
 		"check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
 	},
 	"dependencies": {
+		"@price-parser/types": "*",
 		"axios": "^1.21.1",
 		"chart.js": "^4.6.1",
 		"svelte-routing": "^2.13.0",

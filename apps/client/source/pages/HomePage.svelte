@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import axios from "axios";
 	import ProductCard from "../components/ProductCard.svelte";
-	import type { ApiResponse, ProductCardData } from "../types";
+	import type { ApiResponse, ProductCardData } from "@price-parser/types";
 
 	let productsList: ProductCardData[] = [];
 	let isLoading = true;
@@ -18,7 +18,7 @@
 		errorMessage = "";
 
 		try {
-			const response = await axios.get<ApiResponse>("/api/products?price=true");
+			const response = await axios.get<ApiResponse<ProductCardData[]>>("/api/products?price=true");
 
 			if (response.data.success) {
 				productsList = response.data.data;

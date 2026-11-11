@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ProductCardData } from "../types";
+	import type { ProductCardData } from "@price-parser/types";
 
 	let { product }: { product: ProductCardData } = $props();
 

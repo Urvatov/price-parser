@@ -1,3 +1,4 @@
+import type { AddProductPayload, GetProductsQuery, ProductParams, UpdateProductStatusPayload } from "@price-parser/types";
 import { FastifyReply } from "fastify";
 import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery } from "../library/http.js";
 import { extractOzonSku, getNormalizedOzonProductUrl } from "../library/normalize.js";
@@ -12,23 +13,6 @@ import {
 	getProductsWithLatestPrice,
 	updateProduct
 } from "../services/productsService.js";
-
-interface GetProductsQuery {
-	price?: boolean;
-	marketplace?: string;
-}
-
-interface AddProductBody {
-	url: string | number;
-}
-
-interface ProductParams {
-	id: string;
-}
-
-interface UpdateStatusBody {
-	isActive: boolean;
-}
 
 // roadmap: добавить поиск по маркетплейсу
 export async function getProductsHandler(request: RequestWithQuery<GetProductsQuery>, reply: FastifyReply): Promise<void> {
@@ -45,7 +29,7 @@ export async function getProductsHandler(request: RequestWithQuery<GetProductsQu
 	return reply.send(response);
 }
 
-export async function addProductHandler(request: RequestWithBody<AddProductBody>, reply: FastifyReply): Promise<void> {
+export async function addProductHandler(request: RequestWithBody<AddProductPayload>, reply: FastifyReply): Promise<void> {
 	try {
 		const normalizedUrl = getNormalizedOzonProductUrl(request.body.url);
 		const existingProduct = await getProductByUrl(normalizedUrl);
@@ -130,7 +114,7 @@ export async function getProductHistoryHandler(request: RequestWithParams<Produc
 }
 
 export async function updateProductStatusHandler(
-	request: RequestWithParamsAndBody<ProductParams, UpdateStatusBody>,
+	request: RequestWithParamsAndBody<ProductParams, UpdateProductStatusPayload>,
 	reply: FastifyReply
 ): Promise<void> {
 	const id = request.params.id;

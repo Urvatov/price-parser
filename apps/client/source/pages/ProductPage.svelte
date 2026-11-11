@@ -2,54 +2,21 @@
 	import axios from "axios";
 	import { onDestroy } from "svelte";
 	import { CategoryScale, Chart, LinearScale, LineController, LineElement, PointElement, Tooltip } from "chart.js";
+	import type { ApiResponse, ProductDetails, ProductHistoryData, ProductPrice } from "@price-parser/types";
 
 	Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
-
-	interface ProductPriceRecord {
-		id: string;
-		productId: string;
-		price: number | null;
-		currency: string;
-		inStock: boolean;
-		createdAt: string;
-	}
-
-	interface ProductDetails {
-		id: string;
-		sku: string;
-		marketplace: string;
-		title: string;
-		url: string;
-		image: string | null;
-		isActive: boolean;
-		createdAt: string;
-		latestPrice: ProductPriceRecord | null;
-	}
-
-	interface ProductResponse {
-		success: boolean;
-		data: ProductDetails;
-	}
-
-	interface HistoryResponse {
-		success: boolean;
-		data: {
-			productId: string;
-			history: ProductPriceRecord[];
-		};
-	}
 
 	let { id }: { id: string } = $props();
 
 	let product = $state<ProductDetails | null>(null);
-	let priceHistory = $state<ProductPriceRecord[]>([]);
+	let priceHistory = $state<ProductPrice[]>([]);
 	let isLoading = $state(true);
 	let errorMessage = $state("");
 
 	let canvasElement = $state<HTMLCanvasElement | null>(null);
 	let chartInstance: Chart | null = null;
 
-	function renderPriceChart(history: ProductPriceRecord[]) {
+	function renderPriceChart(history: ProductPrice[]) {
 		if (canvasElement === null) {
 			return;
 		}
@@ -111,8 +78,8 @@
 		errorMessage = "";
 
 		try {
-			const productPromise = axios.get<ProductResponse>(`/api/products/${productId}`);
-			const historyPromise = axios.get<HistoryResponse>(`/api/products/${productId}/history`);
+			const productPromise = axios.get<ApiResponse<ProductDetails>>(`/api/products/${productId}`);
+			const historyPromise = axios.get<ApiResponse<ProductHistoryData>>(`/api/products/${productId}/history`);
 
 			const [productResponse, historyResponse] = await Promise.all([productPromise, historyPromise]);
 
@@ -251,42 +218,40 @@
 	}
 
 	.error-message {
-		color: #ef4444;
+		color: #dc2626;
 		font-weight: 600;
 	}
 
 	.product-container {
 		display: flex;
 		flex-direction: column;
-		gap: 24px;
+		gap: 32px;
 	}
 
 	.product-header {
 		display: flex;
 		gap: 24px;
-		background-color: #ffffff;
+		background: #ffffff;
 		border: 1px solid #e2e8f0;
-		border-radius: 0;
 		padding: 20px;
 	}
 
 	.product-image {
-		width: 220px;
-		height: 220px;
+		width: 200px;
+		height: 200px;
 		object-fit: contain;
-		background-color: #f8fafc;
-		border-radius: 0;
+		background: #f8fafc;
 	}
 
 	.product-info {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 8px;
 		flex: 1;
 	}
 
 	.marketplace-badge {
-		font-size: 11px;
+		font-size: 12px;
 		font-weight: 700;
 		color: #005bff;
 		text-transform: uppercase;
@@ -300,58 +265,56 @@
 	}
 
 	.sku-label {
-		font-size: 13px;
 		color: #64748b;
+		font-size: 14px;
 		margin: 0;
 	}
 
 	.current-price-box {
-		margin-top: 8px;
+		margin: 8px 0;
 	}
 
 	.price-value {
-		font-size: 26px;
+		font-size: 28px;
 		font-weight: 700;
 		color: #0f172a;
 	}
 
 	.out-of-stock-label {
 		font-size: 16px;
-		font-weight: 600;
 		color: #dc2626;
+		font-weight: 600;
 	}
 
 	.external-button {
+		display: inline-block;
 		align-self: flex-start;
-		margin-top: 8px;
-		padding: 8px 16px;
-		background-color: #f1f5f9;
-		color: #0f172a;
+		background: #005bff;
+		color: #ffffff;
+		padding: 10px 16px;
 		text-decoration: none;
-		border-radius: 0;
-		font-size: 14px;
 		font-weight: 500;
+		font-size: 14px;
+		margin-top: auto;
 	}
 
 	.chart-section,
 	.history-section {
-		background-color: #ffffff;
+		background: #ffffff;
 		border: 1px solid #e2e8f0;
-		border-radius: 0;
 		padding: 20px;
-	}
-
-	.chart-wrapper {
-		position: relative;
-		height: 350px;
-		width: 100%;
 	}
 
 	.chart-section h2,
 	.history-section h2 {
+		margin: 0 0 16px;
 		font-size: 18px;
-		margin-top: 0;
-		margin-bottom: 16px;
+	}
+
+	.chart-wrapper {
+		position: relative;
+		height: 300px;
+		width: 100%;
 	}
 
 	.history-list {
@@ -366,9 +329,9 @@
 	.history-item {
 		display: flex;
 		justify-content: space-between;
-		padding: 8px 12px;
-		background-color: #f8fafc;
-		border-radius: 0;
+		padding: 10px 12px;
+		background: #f8fafc;
+		border: 1px solid #f1f5f9;
 		font-size: 14px;
 	}
 
@@ -377,7 +340,7 @@
 	}
 
 	.record-price {
-		font-weight: 700;
+		font-weight: 600;
 		color: #0f172a;
 	}
 

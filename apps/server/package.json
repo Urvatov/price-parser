@@ -27,6 +27,7 @@
 		"@fastify/cors": "^11.3.1",
 		"@fastify/swagger": "^9.9.2",
 		"@fastify/swagger-ui": "^6.1.2",
+		"@price-parser/types": "*",
 		"axios": "^1.20.0",
 		"bullmq": "^6.7.2",
 		"dotenv": "^18.0.8",
