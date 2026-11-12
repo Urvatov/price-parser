@@ -123,7 +123,7 @@
 				class:active={activeFilter === "paused"}
 				onclick={() => (activeFilter = "paused")}
 			>
-				На паузе ({productsList.filter((p) => !p.isActive).length})
+				Остановлено ({productsList.filter((p) => !p.isActive).length})
 			</button>
 		</div>
 	</div>

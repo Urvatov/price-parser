@@ -226,7 +226,7 @@
 				product.isActive = response.data.data.isActive;
 				showActionFeedback(
 					"success",
-					product.isActive ? "Товар возвращен в мониторинг" : "Товар поставлен на паузу"
+					product.isActive ? "Отслеживание товара запущено" : "Отслеживание товара остановлено"
 				);
 			}
 		} catch (err: unknown) {
@@ -321,7 +321,7 @@
 						<span class="marketplace-tag">{product.marketplace}</span>
 						<span class="sku-tag">SKU: {product.sku}</span>
 						<span class="status-indicator" class:paused={!product.isActive}>
-							{product.isActive ? "● АКТИВЕН" : "❚❚ НА ПАУЗЕ"}
+							{product.isActive ? "● АКТИВЕН" : "❚❚ ОСТАНОВЛЕН"}
 						</span>
 					</div>
 
@@ -363,7 +363,6 @@
 						{/if}
 					</div>
 
-					<!-- Панель действий: открыть, пауза, удалить -->
 					<div class="actions-toolbar">
 						<a href={product.url} target="_blank" rel="noreferrer" class="btn btn-primary">
 							Открыть на Ozon ↗
@@ -375,9 +374,9 @@
 							disabled={isUpdatingStatus}
 						>
 							{#if product.isActive}
-								❚❚ Поставить на паузу
+								❚❚ Остановить
 							{:else}
-								▶ Возобновить сбор
+								▶ Запустить
 							{/if}
 						</button>
 

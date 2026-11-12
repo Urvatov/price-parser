@@ -24,7 +24,6 @@ profiles/*
 !profiles/README.md
 apps/*/profiles/
 ozon_debug.png
-*.png
 
 # Sandbox & Temporary
 source/sandbox
