@@ -39,7 +39,7 @@
 		<header class="app-navbar">
 			<div class="navbar-content">
 				<Link to="/" class="brand-logo">
-					<span class="logo-accent">⚡</span> PRICE PARSER
+					PRICE PARSER
 				</Link>
 
 				<div class="navbar-actions">
@@ -51,7 +51,7 @@
 
 					<button class="parser-button" onclick={handleRunParser} disabled={isRunningParser}>
 						{#if isRunningParser}
-							⏳ Запуск...
+							⟳ Запуск...
 						{:else}
 							▶ Запустить сбор цен
 						{/if}
@@ -110,10 +110,6 @@
 
 	:global(.brand-logo:hover) {
 		color: #8eff24;
-	}
-
-	.logo-accent {
-		color: lawngreen;
 	}
 
 	.navbar-actions {

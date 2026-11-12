@@ -20,12 +20,10 @@
 	let isLoading = $state(true);
 	let errorMessage = $state("");
 
-	// Редактирование названия
 	let isEditingTitle = $state(false);
 	let editedTitle = $state("");
 	let isSavingTitle = $state(false);
 
-	// Переключение активности и удаление
 	let isUpdatingStatus = $state(false);
 	let isDeleting = $state(false);
 	let actionFeedback = $state<{ type: "success" | "error"; text: string } | null>(null);
@@ -299,11 +297,11 @@
 
 	{#if isLoading}
 		<div class="status-card">
-			<p>⏳ Загрузка данных о товаре...</p>
+			<p>⧗ Загрузка данных о товаре...</p>
 		</div>
 	{:else if errorMessage}
 		<div class="status-card error">
-			<p>❌ Ошибка: {errorMessage}</p>
+			<p>✕ Ошибка: {errorMessage}</p>
 			<button onclick={() => id && loadProductData(id)} class="retry-btn">Повторить</button>
 		</div>
 	{:else if product !== null}
@@ -323,7 +321,7 @@
 						<span class="marketplace-tag">{product.marketplace}</span>
 						<span class="sku-tag">SKU: {product.sku}</span>
 						<span class="status-indicator" class:paused={!product.isActive}>
-							{product.isActive ? "● АКТИВЕН" : "⏸ НА ПАУЗЕ"}
+							{product.isActive ? "● АКТИВЕН" : "❚❚ НА ПАУЗЕ"}
 						</span>
 					</div>
 
@@ -377,7 +375,7 @@
 							disabled={isUpdatingStatus}
 						>
 							{#if product.isActive}
-								⏸ Поставить на паузу
+								❚❚ Поставить на паузу
 							{:else}
 								▶ Возобновить сбор
 							{/if}
@@ -389,9 +387,9 @@
 							disabled={isDeleting}
 						>
 							{#if isDeleting}
-								⏳ Удаление...
+								⟳ Удаление...
 							{:else}
-								🗑 Удалить товар
+								✕ Удалить товар
 							{/if}
 						</button>
 					</div>

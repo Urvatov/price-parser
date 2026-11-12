@@ -8,7 +8,7 @@ async function main() {
 	console.log(`Путь к файлу кук: ${config.parser.cookiesPath}`);
 
 	if (!fs.existsSync(config.parser.cookiesPath)) {
-		console.error("\n❌ Файл с куками не найден!");
+		console.error("\n[!] Файл с куками не найден!");
 		console.log(`Пожалуйста, экспортируйте куки из Cookie-Editor в файл:`);
 		console.log(`  -> ${config.parser.cookiesPath}`);
 		process.exit(1);
@@ -35,17 +35,17 @@ async function main() {
 		const isLoginPage = currentUrl.includes("/login") || currentUrl.includes("/context/auth");
 
 		if (isLoginPage) {
-			console.log("\n⚠️ Внимание: Произошел редирект на страницу входа (/login).");
+			console.log("\n[!] Внимание: Произошел редирект на страницу входа (/login).");
 			console.log("Куки либо устарели, либо не содержат активную сессию аккаунта.");
 		}
 		else {
-			console.log("\n✅ Успех: Вы находитесь в личном кабинете Ozon!");
+			console.log("\n[✓] Успех: Вы находитесь в личном кабинете Ozon!");
 			console.log(`Откройте скриншот ${screenshotPath}, чтобы убедиться визуально.`);
 		}
 	}
 	catch (error: unknown) {
 		if (error instanceof Error) {
-			console.error("\n❌ Ошибка при проверке:", error.message);
+			console.error("\n[!] Ошибка при проверке:", error.message);
 		}
 	}
 	finally {

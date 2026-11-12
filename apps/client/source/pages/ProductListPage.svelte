@@ -77,14 +77,12 @@
 		</div>
 
 		<button class="refresh-button" onclick={loadProducts} title="Обновить список">
-			🔄 Обновить
+			⟳ Обновить
 		</button>
 	</header>
 
-	<!-- Форма добавления нового товара -->
 	<AddProductMenu onProductAdded={loadProducts} />
 
-	<!-- Панель поиска и фильтрации -->
 	<div class="filter-bar">
 		<div class="search-box">
 			<input
@@ -130,14 +128,13 @@
 		</div>
 	</div>
 
-	<!-- Список карточек -->
 	{#if isLoading}
 		<div class="status-box">
-			<p>⏳ Загрузка товаров из базы данных...</p>
+			<p> ⧗ Загрузка товаров из базы данных...</p>
 		</div>
 	{:else if errorMessage}
 		<div class="status-box error">
-			<p>❌ Ошибка: {errorMessage}</p>
+			<p>✕ Ошибка: {errorMessage}</p>
 			<button onclick={loadProducts} class="retry-button">Повторить попытку</button>
 		</div>
 	{:else if filteredProducts.length === 0}

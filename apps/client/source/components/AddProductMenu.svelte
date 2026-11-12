@@ -13,7 +13,7 @@
 		const trimmedUrl = urlInput.trim();
 
 		if (!trimmedUrl) {
-			feedback = { type: "error", text: "Введите ссылку на товар Ozon или SKU" };
+			feedback = { type: "error", text: "Введите ссылку на товар Ozon или артикул" };
 			return;
 		}
 
@@ -56,11 +56,10 @@
 <div class="add-product-container">
 	<form class="add-product-form" onsubmit={handleSubmit}>
 		<div class="input-wrapper">
-			<span class="input-icon">⚡</span>
 			<input
 				type="text"
 				bind:value={urlInput}
-				placeholder="Ссылка на Ozon (https://www.ozon.ru/product/...) или SKU"
+				placeholder="Ссылка на Ozon (https://www.ozon.ru/product/...) или артикул"
 				disabled={isSubmitting}
 				class="url-input"
 			/>
@@ -68,7 +67,7 @@
 
 		<button type="submit" class="submit-button" disabled={isSubmitting || !urlInput.trim()}>
 			{#if isSubmitting}
-				⏳ Добавление...
+				⟳ Добавление...
 			{:else}
 				+ Отслеживать
 			{/if}
@@ -111,12 +110,6 @@
 
 	.input-wrapper:focus-within {
 		border-color: lawngreen;
-	}
-
-	.input-icon {
-		color: lawngreen;
-		margin-right: 8px;
-		font-size: 14px;
 	}
 
 	.url-input {

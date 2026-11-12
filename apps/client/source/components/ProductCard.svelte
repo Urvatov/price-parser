@@ -20,7 +20,7 @@
 			{:else}
 				<div class="image-placeholder">
 					{#if product.title === "Загрузка данных..."}
-						⏳ СБОР ДАННЫХ
+						⧗ СБОР ДАННЫХ
 					{:else}
 						НЕТ ФОТО
 					{/if}
@@ -28,9 +28,9 @@
 			{/if}
 
 			{#if product.title === "Загрузка данных..."}
-				<div class="loading-overlay">⏳ ПАРСИНГ</div>
+				<div class="loading-overlay">⧗ ПАРСИНГ</div>
 			{:else if !product.isActive}
-				<div class="paused-overlay">НА ПАУЗЕ</div>
+				<div class="paused-overlay">ОСТАНОВЛЕНО</div>
 			{/if}
 		</div>
 
@@ -46,7 +46,7 @@
 
 			<div class="price-container">
 				{#if product.title === "Загрузка данных..."}
-					<span class="parsing-status">⏳ СБОР ДАННЫХ...</span>
+					<span class="parsing-status">⧗ СБОР ДАННЫХ...</span>
 				{:else if product.latestPrice !== null && product.latestPrice.inStock && product.latestPrice.price !== null}
 					<span class="price-value">{product.latestPrice.price.toLocaleString("ru-RU")} ₽</span>
 				{:else}
