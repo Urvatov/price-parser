@@ -75,8 +75,8 @@ export const config = {
 		baseDelayMs: Number(process.env.PARSER_BASE_DELAY_MS) || 3500,
 		spreadDelayMs: Number(process.env.PARSER_SPREAD_DELAY_MS) || 1000,
 		headless: process.env.PARSER_HEADLESS !== "false",
-		profileDirectory: resolveRootPath(process.env.OZON_PROFILE_DIR || "./profiles/ozon"),
-		storageStatePath: resolveRootPath(process.env.OZON_STORAGE_STATE || "./profiles/ozon_state.json"),
+		profileDirectory: resolveRootPath(process.env.OZON_PROFILE_DIR || "./profiles/ozon_browser"),
+		cookiesPath: resolveRootPath(process.env.OZON_COOKIES || process.env.OZON_STORAGE_STATE || "./profiles/ozon.json"),
 		userAgent: process.env.PARSER_USER_AGENT
 			|| "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 	}

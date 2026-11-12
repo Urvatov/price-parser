@@ -5,12 +5,12 @@ import { createOzonSession } from "../parsers/parserOzon.js";
 
 async function main() {
 	console.log("=== Проверка авторизации Ozon ===");
-	console.log(`Путь к файлу кук: ${config.parser.storageStatePath}`);
+	console.log(`Путь к файлу кук: ${config.parser.cookiesPath}`);
 
-	if (!fs.existsSync(config.parser.storageStatePath)) {
+	if (!fs.existsSync(config.parser.cookiesPath)) {
 		console.error("\n❌ Файл с куками не найден!");
 		console.log(`Пожалуйста, экспортируйте куки из Cookie-Editor в файл:`);
-		console.log(`  -> ${config.parser.storageStatePath}`);
+		console.log(`  -> ${config.parser.cookiesPath}`);
 		process.exit(1);
 	}
 
@@ -27,8 +27,8 @@ async function main() {
 		const currentUrl = page.url();
 		console.log(`[Ozon Test] Текущий URL: ${currentUrl}`);
 
-		// Сохраняем скриншот для визуального подтверждения рядом с ozon_state.json
-		const screenshotPath = path.resolve(path.dirname(config.parser.storageStatePath), "auth_check.png");
+		// Сохраняем скриншот для визуального подтверждения рядом с ozon.json
+		const screenshotPath = path.resolve(path.dirname(config.parser.cookiesPath), "auth_check.png");
 		await page.screenshot({ path: screenshotPath, fullPage: false });
 		console.log(`[Ozon Test] Скриншот сохранен: ${screenshotPath}`);
 

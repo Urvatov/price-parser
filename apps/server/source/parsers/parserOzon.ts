@@ -3,7 +3,6 @@ import path from "path";
 import { BrowserContext, chromium, Page } from "playwright";
 import { config } from "../config.js";
 import { extractOzonSku } from "../helpers/normalize.js";
-import { delay } from "../helpers/time.js";
 
 export interface OzonParsedData {
 	sku: string | null;
@@ -73,16 +72,7 @@ function normalizeCookie(raw: RawCookie) {
 }
 
 export async function createOzonSession(): Promise<OzonSession> {
-	const hasProfile = fs.existsSync(config.parser.profileDirectory);
-	const hasStorageState = fs.existsSync(config.parser.storageStatePath);
-	const isHeadless = config.parser.headless || hasProfile || hasStorageState;
-
-	if (isHeadless) {
-		console.log("[Ozon] Запуск браузера в фоновом режиме (headless)...");
-	}
-	else {
-		console.log("[Ozon] Профиль не найден. Открываем окно для ручной авторизации...");
-	}
+	console.log(`[Ozon] Запуск браузера (headless: ${config.parser.headless})...`);
 
 	const args: string[] = [
 		"--disable-blink-features=AutomationControlled",
@@ -93,15 +83,15 @@ export async function createOzonSession(): Promise<OzonSession> {
 	];
 
 	const context = await chromium.launchPersistentContext(config.parser.profileDirectory, {
-		headless: isHeadless,
+		headless: config.parser.headless,
 		viewport: { width: 1280, height: 720 },
 		userAgent: config.parser.userAgent,
 		args: args
 	});
 
-	if (hasStorageState) {
+	if (fs.existsSync(config.parser.cookiesPath)) {
 		try {
-			const rawState = fs.readFileSync(config.parser.storageStatePath, "utf-8");
+			const rawState = fs.readFileSync(config.parser.cookiesPath, "utf-8");
 			const state = JSON.parse(rawState);
 			let cookiesToLoad: RawCookie[] = [];
 
@@ -116,13 +106,18 @@ export async function createOzonSession(): Promise<OzonSession> {
 				const normalizedCookies = cookiesToLoad.map(normalizeCookie);
 				await context.addCookies(normalizedCookies);
 				console.log(
-					`[Ozon] Куки успешно импортированы из ${config.parser.storageStatePath} (${normalizedCookies.length} шт.)`
+					`[Ozon] Куки успешно импортированы из ${config.parser.cookiesPath} (${normalizedCookies.length} шт.)`
 				);
 			}
 		}
 		catch (error) {
-			console.warn("[Ozon] Не удалось применить storageState:", error);
+			console.warn("[Ozon] Не удалось применить файл кук:", error);
 		}
+	}
+	else {
+		console.log(
+			`[Ozon] Файл кук не найден (${config.parser.cookiesPath}). Парсер запущен в неавторизованном режиме.`
+		);
 	}
 
 	await context.addInitScript(() => {
@@ -137,12 +132,6 @@ export async function createOzonSession(): Promise<OzonSession> {
 	}
 	else {
 		page = await context.newPage();
-	}
-
-	if (!hasProfile && !hasStorageState && !isHeadless) {
-		console.log("Войди в аккаунт Ozon (ожидание 60 сек)...");
-		await delay(60 * 1000);
-		console.log("Профиль сохранен.");
 	}
 
 	const session = {
