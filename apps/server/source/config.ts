@@ -24,6 +24,29 @@ function loadEnvironmentVariables(): void {
 
 loadEnvironmentVariables();
 
+export function resolveRootPath(targetPath: string): string {
+	if (path.isAbsolute(targetPath)) {
+		return targetPath;
+	}
+
+	const cwdPath = path.resolve(process.cwd(), targetPath);
+	if (fs.existsSync(cwdPath)) {
+		return cwdPath;
+	}
+
+	const rootPath = path.resolve(__dirname, "../../../", targetPath);
+	if (fs.existsSync(rootPath)) {
+		return rootPath;
+	}
+
+	const buildRootPath = path.resolve(__dirname, "../../", targetPath);
+	if (fs.existsSync(buildRootPath)) {
+		return buildRootPath;
+	}
+
+	return rootPath;
+}
+
 export const config = {
 	isProduction: process.env.NODE_ENV === "production",
 
@@ -52,8 +75,8 @@ export const config = {
 		baseDelayMs: Number(process.env.PARSER_BASE_DELAY_MS) || 3500,
 		spreadDelayMs: Number(process.env.PARSER_SPREAD_DELAY_MS) || 1000,
 		headless: process.env.PARSER_HEADLESS !== "false",
-		profileDirectory: process.env.OZON_PROFILE_DIR || path.resolve(process.cwd(), "profiles/ozon"),
-		storageStatePath: process.env.OZON_STORAGE_STATE || path.resolve(process.cwd(), "profiles/ozon_state.json"),
+		profileDirectory: resolveRootPath(process.env.OZON_PROFILE_DIR || "./profiles/ozon"),
+		storageStatePath: resolveRootPath(process.env.OZON_STORAGE_STATE || "./profiles/ozon_state.json"),
 		userAgent: process.env.PARSER_USER_AGENT
 			|| "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 	}

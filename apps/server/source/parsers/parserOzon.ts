@@ -18,6 +18,60 @@ interface OzonSession {
 	page: Page;
 }
 
+interface RawCookie {
+	name: string;
+	value: string;
+	domain?: string;
+	path?: string;
+	secure?: boolean;
+	httpOnly?: boolean;
+	sameSite?: string;
+	expires?: number;
+	expirationDate?: number;
+	[key: string]: unknown;
+}
+
+function normalizeCookie(raw: RawCookie) {
+	let sameSite: "Strict" | "Lax" | "None" | undefined;
+	if (raw.sameSite) {
+		const s = String(raw.sameSite).toLowerCase();
+		if (s === "no_restriction" || s === "none") {
+			sameSite = "None";
+		}
+		else if (s === "lax") {
+			sameSite = "Lax";
+		}
+		else if (s === "strict") {
+			sameSite = "Strict";
+		}
+	}
+
+	const expires = raw.expirationDate ?? raw.expires;
+
+	if (raw.domain) {
+		return {
+			name: raw.name,
+			value: raw.value,
+			domain: raw.domain,
+			path: raw.path || "/",
+			secure: Boolean(raw.secure),
+			httpOnly: Boolean(raw.httpOnly),
+			...(typeof expires === "number" ? { expires } : {}),
+			...(sameSite ? { sameSite } : {})
+		};
+	}
+
+	return {
+		name: raw.name,
+		value: raw.value,
+		url: "https://www.ozon.ru",
+		secure: Boolean(raw.secure),
+		httpOnly: Boolean(raw.httpOnly),
+		...(typeof expires === "number" ? { expires } : {}),
+		...(sameSite ? { sameSite } : {})
+	};
+}
+
 export async function createOzonSession(): Promise<OzonSession> {
 	const hasProfile = fs.existsSync(config.parser.profileDirectory);
 	const hasStorageState = fs.existsSync(config.parser.storageStatePath);
@@ -49,13 +103,21 @@ export async function createOzonSession(): Promise<OzonSession> {
 		try {
 			const rawState = fs.readFileSync(config.parser.storageStatePath, "utf-8");
 			const state = JSON.parse(rawState);
+			let cookiesToLoad: RawCookie[] = [];
+
 			if (Array.isArray(state)) {
-				await context.addCookies(state);
-				console.log("[Ozon] Куки успешно импортированы из JSON массива.");
+				cookiesToLoad = state;
 			}
 			else if (state && Array.isArray(state.cookies)) {
-				await context.addCookies(state.cookies);
-				console.log("[Ozon] Сессия storageState успешно загружена.");
+				cookiesToLoad = state.cookies;
+			}
+
+			if (cookiesToLoad.length > 0) {
+				const normalizedCookies = cookiesToLoad.map(normalizeCookie);
+				await context.addCookies(normalizedCookies);
+				console.log(
+					`[Ozon] Куки успешно импортированы из ${config.parser.storageStatePath} (${normalizedCookies.length} шт.)`
+				);
 			}
 		}
 		catch (error) {

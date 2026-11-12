@@ -12,7 +12,6 @@
 
 	async function runParser() {}
 
-	async function test(a: string, b: string) {}
 	async function fetchProducts() {
 		isLoading = true;
 		errorMessage = "";

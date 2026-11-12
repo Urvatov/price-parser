@@ -183,12 +183,18 @@
 	}
 
 	async function saveTitle() {
-		if (!product || !editedTitle.trim() || isSavingTitle) return;
+		if (!product || isSavingTitle) return;
+		const trimmed = editedTitle.trim();
+		if (!trimmed) {
+			showActionFeedback("error", "Название не может быть пустым");
+			return;
+		}
+
 		isSavingTitle = true;
 
 		try {
-			const response = await axios.patch<UpdateProductResponse>(`/api/products/${product.id}`, {
-				title: editedTitle.trim()
+			const response = await axios.patch<UpdateProductResponse>(`/api/products/${product.id}/title`, {
+				title: trimmed
 			});
 
 			if (response.data.success) {
@@ -464,7 +470,6 @@
 
 	:global(.back-link:hover) {
 		color: #8eff24;
-		text-shadow: 0 0 8px rgba(124, 252, 0, 0.4);
 	}
 
 	.action-alert {
@@ -586,7 +591,6 @@
 		font-weight: 700;
 		color: lawngreen;
 		letter-spacing: 0.06em;
-		text-shadow: 0 0 6px rgba(124, 252, 0, 0.3);
 	}
 
 	.sku-tag {
@@ -654,7 +658,6 @@
 		font-size: 15px;
 		outline: none;
 		width: 100%;
-		box-shadow: 0 0 8px rgba(124, 252, 0, 0.2);
 	}
 
 	.title-edit-actions {
@@ -679,7 +682,6 @@
 		font-size: 26px;
 		font-weight: 700;
 		color: lawngreen;
-		text-shadow: 0 0 10px rgba(124, 252, 0, 0.35);
 	}
 
 	.out-of-stock-value {
@@ -718,7 +720,6 @@
 
 	.btn-primary:hover {
 		background-color: #8eff24;
-		box-shadow: 0 0 12px rgba(124, 252, 0, 0.45);
 	}
 
 	.btn-secondary {
@@ -834,7 +835,6 @@
 	.record-price {
 		font-weight: 700;
 		color: lawngreen;
-		text-shadow: 0 0 6px rgba(124, 252, 0, 0.3);
 	}
 
 	.record-out-of-stock {

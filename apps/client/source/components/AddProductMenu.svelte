@@ -106,12 +106,11 @@
 		background-color: var(--bg-input);
 		border: 1px solid var(--border-color);
 		padding: 0 12px;
-		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+		transition: border-color 0.15s ease;
 	}
 
 	.input-wrapper:focus-within {
 		border-color: lawngreen;
-		box-shadow: 0 0 8px rgba(124, 252, 0, 0.2);
 	}
 
 	.input-icon {
@@ -149,7 +148,6 @@
 
 	.submit-button:hover:not(:disabled) {
 		background-color: #8eff24;
-		box-shadow: 0 0 14px rgba(124, 252, 0, 0.45);
 	}
 
 	.submit-button:disabled {

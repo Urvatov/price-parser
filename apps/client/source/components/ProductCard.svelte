@@ -65,14 +65,13 @@
 		display: flex;
 		flex-direction: column;
 		width: 250px;
-		transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+		transition: border-color 0.15s ease, transform 0.15s ease;
 		cursor: pointer;
 	}
 
 	.card:hover {
 		border-color: lawngreen;
 		transform: translateY(-2px);
-		box-shadow: 0 0 12px rgba(124, 252, 0, 0.2);
 	}
 
 	.card.inactive {
@@ -176,7 +175,6 @@
 		font-size: 18px;
 		font-weight: 700;
 		color: lawngreen;
-		text-shadow: 0 0 8px rgba(124, 252, 0, 0.3);
 	}
 
 	.parsing-status {

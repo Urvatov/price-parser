@@ -106,12 +106,10 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		text-shadow: 0 0 12px rgba(124, 252, 0, 0.4);
 	}
 
 	:global(.brand-logo:hover) {
 		color: #8eff24;
-		text-shadow: 0 0 16px rgba(124, 252, 0, 0.6);
 	}
 
 	.logo-accent {
@@ -160,7 +158,6 @@
 		background-color: lawngreen;
 		border-color: lawngreen;
 		color: #060a07;
-		box-shadow: 0 0 10px rgba(124, 252, 0, 0.35);
 	}
 
 	.parser-button:disabled {

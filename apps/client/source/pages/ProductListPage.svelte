@@ -183,7 +183,6 @@
 		font-size: 24px;
 		font-weight: 700;
 		color: lawngreen;
-		text-shadow: 0 0 10px rgba(124, 252, 0, 0.3);
 	}
 
 	.page-subtitle {
@@ -211,7 +210,6 @@
 		background-color: lawngreen;
 		border-color: lawngreen;
 		color: #060a07;
-		box-shadow: 0 0 10px rgba(124, 252, 0, 0.35);
 	}
 
 	.filter-bar {
@@ -234,12 +232,11 @@
 		background-color: var(--bg-input);
 		border: 1px solid var(--border-color);
 		padding: 0 10px;
-		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+		transition: border-color 0.15s ease;
 	}
 
 	.search-box:focus-within {
 		border-color: lawngreen;
-		box-shadow: 0 0 8px rgba(124, 252, 0, 0.2);
 	}
 
 	.search-input {
@@ -294,7 +291,6 @@
 		color: lawngreen;
 		border-color: lawngreen;
 		font-weight: 700;
-		box-shadow: 0 0 8px rgba(124, 252, 0, 0.18);
 	}
 
 	.status-box {

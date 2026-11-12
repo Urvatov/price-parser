@@ -18,6 +18,7 @@
 		"preview:client": "npm run preview --workspace=price-parser-client",
 		"typecheck": "npm run typecheck --workspace=price-parser-server && npm run check --workspace=price-parser-client",
 		"format": "dprint fmt --no-gitignore",
+		"check:auth": "npm run check:auth --workspace=price-parser-server",
 		"db:push": "npm run db:push --workspace=price-parser-server",
 		"db:generate": "npm run db:generate --workspace=price-parser-server",
 		"db:drop": "npm run db:drop --workspace=price-parser-server",
