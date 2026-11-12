@@ -136,7 +136,7 @@ export async function runOzonUpdatePipeline() {
 			}
 
 			if (index < products.length - 1) {
-				console.log("\tПауза между запросами...");
+				console.log("\tЗадержка между запросами...");
 				await delayRandom(config.parser.baseDelayMs, config.parser.spreadDelayMs);
 			}
 		}
