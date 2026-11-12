@@ -1,18 +1,31 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { defineConfig } from "vite";
+import path from "path";
+import { fileURLToPath } from "url";
+import { defineConfig, loadEnv } from "vite";
 
-export default defineConfig({
-	plugins: [svelte()],
-	build: {
-		outDir: "build"
-	},
-	server: {
-		port: 5173,
-		proxy: {
-			"/api": {
-				target: "http://localhost:3000",
-				changeOrigin: true
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig(({ mode }) => {
+	const rootDir = path.resolve(__dirname, "../../");
+	const env = loadEnv(mode, rootDir, "");
+
+	const clientPort = Number(env.CLIENT_PORT) || 5173;
+	const serverPort = Number(env.SERVER_PORT) || 3000;
+
+	return {
+		plugins: [svelte()],
+		envDir: rootDir,
+		build: {
+			outDir: "build"
+		},
+		server: {
+			port: clientPort,
+			proxy: {
+				"/api": {
+					target: `http://localhost:${serverPort}`,
+					changeOrigin: true
+				}
 			}
 		}
-	}
+	};
 });

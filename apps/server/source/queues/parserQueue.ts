@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { PARSER_CRON_PATTERN } from "../../config.js";
+import { config } from "../config.js";
 import { redisConnection } from "./queueClient.js";
 
 export const PARSER_QUEUE_NAME = "parser-queue";
@@ -38,7 +38,7 @@ export async function registerScheduledParserJobs(): Promise<void> {
 	await parserQueue.upsertJobScheduler(
 		"scheduled-ozon-update",
 		{
-			pattern: PARSER_CRON_PATTERN
+			pattern: config.parser.cronPattern
 		},
 		{
 			name: "scheduled-ozon-update-job",

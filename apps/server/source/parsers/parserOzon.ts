@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { BrowserContext, chromium, Page } from "playwright";
-import { OZON_PROFILE_DIRECTORY, USER_AGENT } from "../../config.js";
-import { extractOzonSku } from "../library/normalize.js";
-import { delay } from "../library/time.js";
+import { config } from "../config.js";
+import { extractOzonSku } from "../helpers/normalize.js";
+import { delay } from "../helpers/time.js";
 
 export interface OzonParsedData {
 	sku: string | null;
@@ -19,14 +19,12 @@ interface OzonSession {
 }
 
 export async function createOzonSession(): Promise<OzonSession> {
-	let isHeadless = false;
-	const hasProfile = fs.existsSync(OZON_PROFILE_DIRECTORY);
-	if (hasProfile) {
-		isHeadless = true;
-	}
+	const hasProfile = fs.existsSync(config.parser.profileDirectory);
+	const hasStorageState = fs.existsSync(config.parser.storageStatePath);
+	const isHeadless = config.parser.headless || hasProfile || hasStorageState;
 
 	if (isHeadless) {
-		console.log("[Ozon] Запуск браузера в фоновом режиме...");
+		console.log("[Ozon] Запуск браузера в фоновом режиме (headless)...");
 	}
 	else {
 		console.log("[Ozon] Профиль не найден. Открываем окно для ручной авторизации...");
@@ -40,12 +38,30 @@ export async function createOzonSession(): Promise<OzonSession> {
 		"--proxy-bypass-list=*"
 	];
 
-	const context = await chromium.launchPersistentContext(OZON_PROFILE_DIRECTORY, {
+	const context = await chromium.launchPersistentContext(config.parser.profileDirectory, {
 		headless: isHeadless,
 		viewport: { width: 1280, height: 720 },
-		userAgent: USER_AGENT,
+		userAgent: config.parser.userAgent,
 		args: args
 	});
+
+	if (hasStorageState) {
+		try {
+			const rawState = fs.readFileSync(config.parser.storageStatePath, "utf-8");
+			const state = JSON.parse(rawState);
+			if (Array.isArray(state)) {
+				await context.addCookies(state);
+				console.log("[Ozon] Куки успешно импортированы из JSON массива.");
+			}
+			else if (state && Array.isArray(state.cookies)) {
+				await context.addCookies(state.cookies);
+				console.log("[Ozon] Сессия storageState успешно загружена.");
+			}
+		}
+		catch (error) {
+			console.warn("[Ozon] Не удалось применить storageState:", error);
+		}
+	}
 
 	await context.addInitScript(() => {
 		Object.defineProperty(navigator, "webdriver", {
@@ -61,7 +77,7 @@ export async function createOzonSession(): Promise<OzonSession> {
 		page = await context.newPage();
 	}
 
-	if (!hasProfile) {
+	if (!hasProfile && !hasStorageState && !isHeadless) {
 		console.log("Войди в аккаунт Ozon (ожидание 60 сек)...");
 		await delay(60 * 1000);
 		console.log("Профиль сохранен.");
@@ -172,9 +188,9 @@ async function parsePrice(page: Page, inStock: boolean): Promise<number | null> 
 
 		const priceElements = await priceWidget.locator('span:has-text("₽")').allInnerTexts();
 
-		const prices: number[] = priceElements.map((text) => Number(text.replace(/[^\d]/g, ""))).filter((val) =>
-			!Number.isNaN(val) && val > 0
-		);
+		const prices: number[] = priceElements
+			.map((text) => Number(text.replace(/[^\d]/g, "")))
+			.filter((val) => !Number.isNaN(val) && val > 0);
 
 		if (prices.length > 0) {
 			priceResult = Math.min(...prices);

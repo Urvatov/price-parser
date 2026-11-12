@@ -1,6 +1,6 @@
 import { Job, Worker } from "bullmq";
-import { PARSER_BASE_DELAY_MS, PARSER_SPREAD_DELAY_MS } from "../../config.js";
-import { delayRandom } from "../library/time.js";
+import { config } from "../config.js";
+import { delayRandom } from "../helpers/time.js";
 import { createOzonSession, parseOzonProduct } from "../parsers/parserOzon.js";
 import { runOzonUpdatePipeline } from "../pipelines/pipelineOzon.js";
 import { createPrice } from "../services/productPricesService.js";
@@ -58,7 +58,7 @@ export function startParserWorker(): Worker<ParserJobData> {
 				await runOzonUpdatePipeline();
 			}
 
-			await delayRandom(PARSER_BASE_DELAY_MS, PARSER_SPREAD_DELAY_MS);
+			await delayRandom(config.parser.baseDelayMs, config.parser.spreadDelayMs);
 			console.log(`[Worker] Задача "${job.name}" успешно завершена`);
 		},
 		{

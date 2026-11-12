@@ -1,8 +1,7 @@
-import "dotenv/config";
-import { PARSER_BASE_DELAY_MS, PARSER_SPREAD_DELAY_MS } from "../../config.js";
-import { shuffle } from "../library/arrays.js";
-import { getNormalizedOzonProductUrl } from "../library/normalize.js";
-import { delayRandom } from "../library/time.js";
+import { config } from "../config.js";
+import { shuffle } from "../helpers/arrays.js";
+import { getNormalizedOzonProductUrl } from "../helpers/normalize.js";
+import { delayRandom } from "../helpers/time.js";
 import { createOzonSession, parseOzonProduct } from "../parsers/parserOzon.js";
 import { createPrice } from "../services/productPricesService.js";
 import { createProduct, getProductByUrl, getProductsByMarketplace, updateProduct } from "../services/productsService.js";
@@ -28,37 +27,42 @@ export async function trackOzonProduct(rawInput: string | number) {
 	const page = ozonSession.page;
 
 	try {
-		console.log(`[Ozon] Загрузка нового товара: ${normalizedUrl}`);
+		console.log(`\nОбработка нового товара: ${normalizedUrl}`);
 		const parsedData = await parseOzonProduct(page, normalizedUrl);
 
 		if (!parsedData.title) {
-			throw new Error(`Не удалось загрузить карточку Ozon по адресу: ${normalizedUrl}`);
+			throw new Error("Не удалось спарсить страницу (нет заголовка). Возможно, капча или блок.");
 		}
 
-		if (!parsedData.sku) {
-			throw new Error(`Не удалось определить артикул товара: ${normalizedUrl}`);
-		}
-
-		const createdProduct = await createProduct({
+		const newProduct = await createProduct({
 			marketplace: "OZON",
 			url: normalizedUrl,
-			sku: parsedData.sku,
+			sku: parsedData.sku || "unknown",
 			title: parsedData.title,
 			image: parsedData.image,
 			isActive: true
 		});
 
-		console.log(`[Ozon] Товар успешно добавлен: "${createdProduct.title}" (Артикул: ${createdProduct.sku})`);
+		console.log(`Товар успешно добавлен в базу: "${newProduct.title}" (ID: ${newProduct.id})`);
 
-		await createPrice({
-			productId: createdProduct.id,
-			price: parsedData.price,
-			inStock: parsedData.inStock
-		});
+		if (parsedData.inStock && parsedData.price !== null) {
+			console.log(`Текущая цена: ${parsedData.price} ₽`);
+			await createPrice({
+				productId: newProduct.id,
+				price: parsedData.price,
+				inStock: true
+			});
+		}
+		else {
+			console.log("Товар сейчас не в наличии.");
+			await createPrice({
+				productId: newProduct.id,
+				price: null,
+				inStock: false
+			});
+		}
 
-		console.log(`[Ozon] Первая цена зафиксирована: ${parsedData.price} ₽ (В наличии: ${parsedData.inStock})`);
-
-		const resultProduct = createdProduct;
+		const resultProduct = newProduct;
 		return resultProduct;
 	}
 	finally {
@@ -66,36 +70,39 @@ export async function trackOzonProduct(rawInput: string | number) {
 	}
 }
 
-export async function runOzonUpdatePipeline(): Promise<void> {
+export async function runOzonUpdatePipeline() {
 	if (isOzonPipelineRunning) {
-		console.warn("[Pipeline] Попытка запуска занятого пайплайна. Пропускаем.");
-		throw new Error("Пайплайн обновления цен уже выполняется");
-	}
-
-	const ozonProducts = await getProductsByMarketplace("OZON");
-	const products = shuffle(ozonProducts);
-
-	console.log(`Найдено товаров для парсинга: ${products.length}`);
-
-	if (products.length === 0) {
-		console.log("Нет активных товаров в очереди.");
+		console.log("[Ozon Pipeline] Процесс уже выполняется, пропускаем запуск.");
 		return;
 	}
 
 	isOzonPipelineRunning = true;
-	const { context, page } = await createOzonSession();
+	console.log("\n--- Запуск планового обновления цен Ozon ---");
+
+	const products = await getProductsByMarketplace("OZON");
+	if (products.length === 0) {
+		console.log("Нет активных товаров Ozon для отслеживания.");
+		isOzonPipelineRunning = false;
+		return;
+	}
+
+	console.log(`Найдено активных товаров: ${products.length}`);
+	shuffle(products);
+
+	const ozonSession = await createOzonSession();
+	const context = ozonSession.context;
+	const page = ozonSession.page;
 
 	try {
-		for (let index = 0; index < products.length; index++) {
-			const product = products[index];
-			console.log(`\n[${index + 1}/${products.length}] "${product.title}"`);
+		for (const [index, product] of products.entries()) {
+			console.log(`\n[${index + 1}/${products.length}] Сканирование: "${product.title}"`);
 
 			const parsedData = await parseOzonProduct(page, product.url);
 
+			const updatePayload: Record<string, unknown> = {};
 			let needUpdate = false;
-			const updatePayload: { sku?: string; image?: string; } = {};
 
-			if (parsedData.sku !== null && !product.sku) {
+			if (parsedData.sku && (!product.sku || product.sku === "unknown")) {
 				updatePayload.sku = parsedData.sku;
 				needUpdate = true;
 			}
@@ -130,7 +137,7 @@ export async function runOzonUpdatePipeline(): Promise<void> {
 
 			if (index < products.length - 1) {
 				console.log("\tПауза между запросами...");
-				await delayRandom(PARSER_BASE_DELAY_MS, PARSER_SPREAD_DELAY_MS);
+				await delayRandom(config.parser.baseDelayMs, config.parser.spreadDelayMs);
 			}
 		}
 	}

@@ -1,7 +1,7 @@
-import "dotenv/config";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastify from "fastify";
+import { config } from "./config.js";
 import { registerScheduledParserJobs } from "./queues/parserQueue.js";
 import { startParserWorker } from "./queues/parserWorker.js";
 import { parserRoutes } from "./routes/parserRoutes.js";
@@ -19,11 +19,6 @@ async function main() {
 }
 
 async function setupServer() {
-	const SERVER_PORT = Number(process.env["SERVER_PORT"]);
-	if (!SERVER_PORT) {
-		throw new Error("server port did not find in .env");
-	}
-
 	const server = fastify({ logger: true });
 
 	await server.register(fastifySwagger, {
@@ -45,7 +40,7 @@ async function setupServer() {
 
 	await server.ready();
 
-	await server.listen({ port: SERVER_PORT, host: "0.0.0.0" });
-	console.log(`server is running: http://localhost:${SERVER_PORT}`);
-	console.log(`swagger documentation: http://localhost:${SERVER_PORT}/docs`);
+	await server.listen({ port: config.server.port, host: config.server.host });
+	console.log(`server is running: http://localhost:${config.server.port}`);
+	console.log(`swagger documentation: http://localhost:${config.server.port}/docs`);
 }

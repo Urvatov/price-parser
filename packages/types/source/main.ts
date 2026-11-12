@@ -43,6 +43,11 @@ export interface AddProductPayload {
 	url: string | number;
 }
 
+export interface UpdateProductPayload {
+	title?: string;
+	isActive?: boolean;
+}
+
 export interface UpdateProductStatusPayload {
 	isActive: boolean;
 }
@@ -75,6 +80,7 @@ export type GetProductsResponse = ApiResponse<ProductWithLatestPrice[] | Product
 export type GetProductByIdResponse = ApiResponse<ProductWithLatestPrice>;
 export type GetProductHistoryResponse = ApiResponse<ProductHistoryData>;
 export type AddProductResponse = ApiResponse<Product>;
+export type UpdateProductResponse = ApiResponse<Product>;
 export type UpdateProductStatusResponse = ApiResponse<Product>;
 export type DeleteProductResponse = ApiResponse<Product>;
 export type RunParserResponse = ApiResponse<undefined>;

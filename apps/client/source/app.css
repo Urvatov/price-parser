@@ -1,23 +1,63 @@
+@import url("https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,300..700;1,300..700&display=swap");
+
+:root {
+	--bg-primary: #060a07;
+	--bg-secondary: #0c140e;
+	--bg-card: #101c13;
+	--bg-input: #080e0a;
+	--border-color: #1a3821;
+	--border-focus: lawngreen;
+
+	--text-primary: #e6faec;
+	--text-secondary: #88c999;
+	--text-muted: #4a7555;
+
+	--accent-green: lawngreen;
+	--accent-green-hover: #8eff24;
+	--accent-blue: lawngreen;
+	--accent-blue-hover: #8eff24;
+
+	--success: lawngreen;
+	--warning: #eab308;
+	--danger: #f87171;
+	--danger-hover: #ef4444;
+
+	--font-mono: "Cascadia Code", "Fira Code", "Consolas", "Courier New", monospace;
+}
+
+* {
+	box-sizing: border-box;
+	border-radius: 0 !important;
+}
+
 body {
-	font-family: Cascadia Code;
-	color: lawngreen;
-	background-color: black;
+	margin: 0;
+	padding: 0;
+	font-family: var(--font-mono);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	min-height: 100vh;
+	-webkit-font-smoothing: antialiased;
 }
 
-button {
-	border-radius: 0px;
-	border: solid 2px red;
-
-	height: 32px;
-
-	background-color: lawngreen;
-
-	cursor: pointer;
-
-	margin-bottom: 16px;
+/* Стилизация полосы прокрутки в зеленых тонах */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
 }
 
-button:hover {
-	color: red;
-	background-color: green;
+::-webkit-scrollbar-track {
+	background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--border-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: lawngreen;
+}
+
+input, button, select, textarea {
+	font-family: var(--font-mono);
 }

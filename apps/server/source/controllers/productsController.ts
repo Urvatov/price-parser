@@ -1,7 +1,14 @@
-import type { AddProductPayload, GetProductsQuery, ProductParams, UpdateProductStatusPayload } from "@price-parser/types";
+import type {
+	AddProductPayload,
+	GetProductsQuery,
+	Product,
+	ProductParams,
+	UpdateProductPayload,
+	UpdateProductStatusPayload
+} from "@price-parser/types";
 import { FastifyReply } from "fastify";
-import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery } from "../library/http.js";
-import { extractOzonSku, getNormalizedOzonProductUrl } from "../library/normalize.js";
+import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery } from "../helpers/http.js";
+import { extractOzonSku, getNormalizedOzonProductUrl } from "../helpers/normalize.js";
 import { parserQueue } from "../queues/parserQueue.js";
 import { getLatestPrice, getPriceHistory } from "../services/productPricesService.js";
 import {
@@ -30,11 +37,34 @@ export async function getProductsHandler(request: RequestWithQuery<GetProductsQu
 }
 
 export async function addProductHandler(request: RequestWithBody<AddProductPayload>, reply: FastifyReply): Promise<void> {
+	let createdProduct: Product | null = null;
+
 	try {
 		const normalizedUrl = getNormalizedOzonProductUrl(request.body.url);
 		const existingProduct = await getProductByUrl(normalizedUrl);
 
 		if (existingProduct) {
+			if (existingProduct.title === "Загрузка данных...") {
+				await parserQueue.add(
+					`scrape-product-${existingProduct.id}`,
+					{
+						type: "SCRAPE_SINGLE_PRODUCT",
+						productId: existingProduct.id,
+						url: normalizedUrl
+					},
+					{
+						jobId: `scrape-${existingProduct.id}-${Date.now()}`
+					}
+				);
+
+				const reAddedResponse = {
+					success: true,
+					message: "Товар уже в базе, задача парсинга запущена повторно",
+					data: existingProduct
+				};
+				return reply.send(reAddedResponse);
+			}
+
 			const conflictResponse = {
 				success: true,
 				message: "Товар уже отслеживается",
@@ -52,6 +82,7 @@ export async function addProductHandler(request: RequestWithBody<AddProductPaylo
 			title: "Загрузка данных...",
 			isActive: true
 		});
+		createdProduct = newProduct;
 
 		await parserQueue.add(
 			`scrape-product-${newProduct.id}`,
@@ -61,7 +92,7 @@ export async function addProductHandler(request: RequestWithBody<AddProductPaylo
 				url: normalizedUrl
 			},
 			{
-				jobId: `scrape:${newProduct.id}`
+				jobId: `scrape-${newProduct.id}`
 			}
 		);
 
@@ -74,6 +105,10 @@ export async function addProductHandler(request: RequestWithBody<AddProductPaylo
 		return reply.status(202).send(response);
 	}
 	catch (error: unknown) {
+		if (createdProduct) {
+			await deleteProduct(createdProduct.id).catch(() => {});
+		}
+
 		let errorMessage = "Ошибка при добавлении товара";
 		if (error instanceof Error) {
 			errorMessage = error.message;
@@ -110,6 +145,22 @@ export async function getProductHistoryHandler(request: RequestWithParams<Produc
 	const history = await getPriceHistory(id);
 	const response = { success: true, data: { productId: id, history: history } };
 
+	return reply.send(response);
+}
+
+export async function updateProductHandler(
+	request: RequestWithParamsAndBody<ProductParams, UpdateProductPayload>,
+	reply: FastifyReply
+): Promise<void> {
+	const id = request.params.id;
+	const updatedProduct = await updateProduct(id, request.body);
+
+	if (!updatedProduct) {
+		const notFoundResponse = { success: false, error: "Товар не найден" };
+		return reply.status(404).send(notFoundResponse);
+	}
+
+	const response = { success: true, data: updatedProduct };
 	return reply.send(response);
 }
 

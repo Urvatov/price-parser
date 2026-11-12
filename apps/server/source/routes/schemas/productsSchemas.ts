@@ -106,6 +106,19 @@ export const getProductHistorySchema: FastifySchema = {
 	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } }
 };
 
+export const updateProductSchema: FastifySchema = {
+	tags: ["Products"],
+	summary: "Обновить свойства товара (название, активность)",
+	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } },
+	body: {
+		type: "object",
+		properties: {
+			title: { type: "string", description: "Пользовательское название товара" },
+			isActive: { type: "boolean", description: "Статус отслеживания товара" }
+		}
+	}
+};
+
 export const updateProductStatusSchema: FastifySchema = {
 	tags: ["Products"],
 	summary: "Включить или выключить отслеживание товара",
