@@ -20,7 +20,8 @@ apps/*/.env.*
 !apps/*/.env.example
 
 # Profiles & Runtime data
-profiles/
+profiles/*
+!profiles/README.md
 apps/*/profiles/
 ozon_debug.png
 *.png

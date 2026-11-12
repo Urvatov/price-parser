@@ -1,5 +1,4 @@
 {
-	"$schema": "./dprint.schema.json",
 	"typescript": {
 		"lineWidth": 128,
 		"useTabs": true,
