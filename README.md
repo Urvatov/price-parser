@@ -4,16 +4,16 @@
 
 Монорепозиторий состоит из двух приложений и общего пакета типов:
 
-- **`apps/server`** — бэкенд и воркер парсинга (Fastify, BullMQ, Playwright, Drizzle ORM, PostgreSQL, Redis).
-- **`apps/client`** — фронтенд (Svelte 5, Vite, Chart.js, тёмная терминальная тема в стилистике `lawngreen` со шрифтом Cascadia Code).
+- **`apps/server`** — бэкенд
+- **`apps/client`** — фронтенд
 - **`packages/types`** — общие TypeScript-типы для API и моделей данных.
 
 ---
 
 ## Стек
 
-- **Backend:** Node.js 20+, TypeScript, Fastify, Swagger UI, Playwright (Chromium headless), BullMQ, Redis, PostgreSQL, Drizzle ORM.
-- **Frontend:** Svelte 5 (Runes), Vite, TypeScript, Chart.js
+- **Backend:** Node.js 20+, TypeScript, Fastify, Swagger UI, Playwright, BullMQ, Redis, PostgreSQL, Drizzle ORM.
+- **Frontend:** Svelte 5, TypeScript, Chart.js
 - **Инфраструктура:** Docker, Docker Compose, Nginx
 
 ---
@@ -25,19 +25,6 @@
   - Редактирование названий товаров.
   - Управление статусом: постановка на паузу и возобновление мониторинга.
   - Удаление товара вместе со всей накопленной историей замеров.
-- **Парсинг Ozon без GUI (Headless):**
-  - Поддержка авторизации через экспорт кук (`profiles/ozon.json`) без необходимости открывать графический браузер.
-  - Полная поддержка запуска в Docker-контейнерах на Linux.
-  - Автоматическая адаптация User-Agent под текущую ОС (Windows / Linux / macOS) и маскировка под реального пользователя (таймзона, локаль, параметры браузера).
-- **История и аналитика:**
-  - Сохранение истории замеров в PostgreSQL (цена, статус наличия, дата и время).
-  - Интерактивный график динамики цен (Chart.js) и таблица истории по каждому товару.
-- **Очереди и планировщик:**
-  - Фоновые задачи на базе Redis + BullMQ.
-  - Периодический автозапуск парсинга по Cron-расписанию (настраивается в `.env`).
-  - Ручной запуск обновления всех цен по кнопке из веб-интерфейса или эндпоинта API.
-- **Интерактивная документация:**
-  - Swagger UI со схемами всех запросов и ответов по адресу `/docs`.
 
 ---
 
