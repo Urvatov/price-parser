@@ -72,20 +72,20 @@ function normalizeCookie(raw: RawCookie) {
 }
 
 export async function createOzonSession(): Promise<OzonSession> {
-	console.log(`[Ozon] Запуск браузера (headless: ${config.parser.headless})...`);
+	console.log(`[Ozon] Запуск браузера (headless: ${config.parser.headless}, OS: ${process.platform})...`);
 
 	const args: string[] = [
 		"--disable-blink-features=AutomationControlled",
 		"--no-sandbox",
-		"--disable-setuid-sandbox",
-		"--proxy-server=direct://",
-		"--proxy-bypass-list=*"
+		"--disable-setuid-sandbox"
 	];
 
 	const context = await chromium.launchPersistentContext(config.parser.profileDirectory, {
 		headless: config.parser.headless,
 		viewport: { width: 1280, height: 720 },
 		userAgent: config.parser.userAgent,
+		locale: "ru-RU",
+		timezoneId: "Europe/Moscow",
 		args: args
 	});
 
@@ -119,12 +119,6 @@ export async function createOzonSession(): Promise<OzonSession> {
 			`[Ozon] Файл кук не найден (${config.parser.cookiesPath}). Парсер запущен в неавторизованном режиме.`
 		);
 	}
-
-	await context.addInitScript(() => {
-		Object.defineProperty(navigator, "webdriver", {
-			get: () => undefined
-		});
-	});
 
 	let page: Page;
 	if (context.pages().length > 0) {

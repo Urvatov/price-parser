@@ -47,6 +47,18 @@ export function resolveRootPath(targetPath: string): string {
 	return rootPath;
 }
 
+export function getDefaultUserAgent(): string {
+	switch (process.platform) {
+		case "win32":
+			return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+		case "darwin":
+			return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+		case "linux":
+		default:
+			return "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+	}
+}
+
 export const config = {
 	isProduction: process.env.NODE_ENV === "production",
 
@@ -77,8 +89,7 @@ export const config = {
 		headless: process.env.PARSER_HEADLESS !== "false",
 		profileDirectory: resolveRootPath(process.env.OZON_PROFILE_DIR || "./profiles/ozon_browser"),
 		cookiesPath: resolveRootPath(process.env.OZON_COOKIES || process.env.OZON_STORAGE_STATE || "./profiles/ozon.json"),
-		userAgent: process.env.PARSER_USER_AGENT
-			|| "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+		userAgent: process.env.PARSER_USER_AGENT || getDefaultUserAgent()
 	}
 } as const;
 
