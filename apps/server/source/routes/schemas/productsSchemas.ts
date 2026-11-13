@@ -100,6 +100,12 @@ export const getProductByIdSchema: FastifySchema = {
 	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } }
 };
 
+export const refreshProductSchema: FastifySchema = {
+	tags: ["Products"],
+	summary: "Поставить товар в приоритетную очередь на немедленный сбор цен",
+	params: { type: "object", required: ["id"], properties: { id: { type: "string" } } }
+};
+
 export const getProductHistorySchema: FastifySchema = {
 	tags: ["Products"],
 	summary: "История изменения цен товара",

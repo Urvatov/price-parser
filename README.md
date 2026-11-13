@@ -56,9 +56,9 @@ SERVER_PORT=3000
 SERVER_HOST=0.0.0.0
 
 # База данных PostgreSQL
-POSTGRES_DB=price_parser
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
+POSTGRES_DB=price_parser # название базы данных
+POSTGRES_USER=postgres   # имя пользователя бд
+POSTGRES_PASSWORD=postgres # пароль бд
 POSTGRES_URL=postgresql://postgres:postgres@127.0.0.1:5432/price_parser
 
 # Очереди Redis
@@ -144,7 +144,10 @@ npm run db:studio    # Запуск Drizzle Studio для визуального
 
 ## Roadmap
 
-- [ ] Интеграция с Wildberries
-- [ ] Интеграция с Яндекс Маркет
-- [ ] Оповещения о снижении цены (Telegram-бот / Email)
-- [ ] Экспорт истории цен в CSV/Excel
+- Интеграция с Wildberries
+- Интеграция с Яндекс Маркет
+- Интеграция с Авито
+- Оповещения о снижении цены (Telegram-бот)
+- Экспорт истории цен в CSV/Excel
+- Ручное обновление одного товара
+- Экспорт данных и бэкапы (CSV, JSON)

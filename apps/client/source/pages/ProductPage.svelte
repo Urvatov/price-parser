@@ -26,6 +26,7 @@
 
 	let isUpdatingStatus = $state(false);
 	let isDeleting = $state(false);
+	let isRefreshing = $state(false);
 	let actionFeedback = $state<{ type: "success" | "error"; text: string } | null>(null);
 
 	let canvasElement = $state<HTMLCanvasElement | null>(null);
@@ -236,6 +237,23 @@
 		}
 	}
 
+	async function handleRefreshProduct() {
+		if (!product || isRefreshing) return;
+		isRefreshing = true;
+
+		try {
+			await axios.post(`/api/products/${product.id}/refresh`);
+			showActionFeedback("success", "Товар поставлен в очередь на обновление цен");
+			setTimeout(() => {
+				if (id) loadProductData(id);
+			}, 3500);
+		} catch (err: unknown) {
+			showActionFeedback("error", "Не удалось запросить обновление цены");
+		} finally {
+			isRefreshing = false;
+		}
+	}
+
 	async function handleDeleteProduct() {
 		if (!product || isDeleting) return;
 
@@ -367,6 +385,19 @@
 						<a href={product.url} target="_blank" rel="noreferrer" class="btn btn-primary">
 							Открыть на Ozon ↗
 						</a>
+
+						<button
+							class="btn btn-secondary"
+							onclick={handleRefreshProduct}
+							disabled={isRefreshing}
+							title="Запросить сбор актуальной цены прямо сейчас"
+						>
+							{#if isRefreshing}
+								⟳ Запрос...
+							{:else}
+								⟳ Обновить цену
+							{/if}
+						</button>
 
 						<button
 							class="btn btn-secondary"
@@ -549,112 +580,116 @@
 	.product-image-box {
 		width: 220px;
 		height: 220px;
+		flex-shrink: 0;
 		background-color: var(--bg-input);
 		border: 1px solid var(--border-color);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		flex-shrink: 0;
+		overflow: hidden;
 	}
 
 	.product-image {
-		max-width: 100%;
-		max-height: 100%;
+		width: 100%;
+		height: 100%;
 		object-fit: contain;
-		padding: 8px;
 	}
 
 	.no-image {
-		color: var(--text-muted);
 		font-size: 13px;
+		color: var(--text-muted);
 	}
 
 	.product-info-box {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-		flex: 1;
+		min-width: 0;
 	}
 
 	.meta-row {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 12px;
 	}
 
 	.marketplace-tag {
-		font-size: 12px;
-		font-weight: 700;
+		background-color: rgba(124, 252, 0, 0.15);
 		color: lawngreen;
-		letter-spacing: 0.06em;
+		border: 1px solid lawngreen;
+		font-size: 11px;
+		font-weight: 700;
+		padding: 2px 8px;
 	}
 
 	.sku-tag {
 		color: var(--text-muted);
-		font-size: 12px;
+		font-size: 11px;
 	}
 
 	.status-indicator {
 		font-size: 11px;
 		font-weight: 700;
 		color: lawngreen;
-		background-color: rgba(124, 252, 0, 0.1);
-		padding: 2px 8px;
-		border: 1px solid lawngreen;
+		margin-left: auto;
 	}
 
 	.status-indicator.paused {
-		color: #eab308;
-		background-color: rgba(234, 179, 8, 0.1);
-		border-color: #eab308;
+		color: var(--text-muted);
 	}
 
 	.title-display-container {
 		display: flex;
 		align-items: flex-start;
 		gap: 12px;
+		margin-bottom: 16px;
 	}
 
 	.product-title {
+		margin: 0;
 		font-size: 18px;
 		line-height: 1.4;
-		margin: 0;
 		color: var(--text-primary);
-		font-weight: 600;
-		flex: 1;
+		word-break: break-word;
 	}
 
 	.btn-icon-edit {
-		background-color: var(--bg-input);
-		color: lawngreen;
+		background: transparent;
 		border: 1px solid var(--border-color);
-		padding: 4px 10px;
+		color: var(--text-secondary);
+		padding: 4px 8px;
 		font-size: 12px;
 		cursor: pointer;
 		white-space: nowrap;
-		transition: all 0.15s ease;
+		flex-shrink: 0;
 	}
 
 	.btn-icon-edit:hover {
 		border-color: lawngreen;
-		background-color: rgba(124, 252, 0, 0.1);
+		color: lawngreen;
 	}
 
 	.title-edit-container {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+		margin-bottom: 16px;
 	}
 
 	.title-input {
+		width: 100%;
 		background-color: var(--bg-input);
 		border: 1px solid lawngreen;
 		color: var(--text-primary);
-		padding: 10px;
+		padding: 8px 12px;
 		font-size: 15px;
+		font-family: inherit;
+		box-sizing: border-box;
+	}
+
+	.title-input:focus {
 		outline: none;
-		width: 100%;
 	}
 
 	.title-edit-actions {
@@ -666,17 +701,19 @@
 		background-color: var(--bg-input);
 		border: 1px solid var(--border-color);
 		padding: 12px 16px;
-		margin: 4px 0;
+		margin-bottom: 16px;
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
 	}
 
 	.price-label {
-		font-size: 12px;
+		font-size: 13px;
 		color: var(--text-muted);
-		margin-bottom: 4px;
 	}
 
 	.price-value {
-		font-size: 26px;
+		font-size: 24px;
 		font-weight: 700;
 		color: lawngreen;
 	}

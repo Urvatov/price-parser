@@ -1,6 +1,6 @@
 {
 	"name": "price-parser",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"private": true,
 	"type": "module",
 	"workspaces": [
@@ -29,5 +29,12 @@
 	"devDependencies": {
 		"concurrently": "^9.1.2",
 		"dprint": "^0.64.1"
+	},
+	"allowScripts": {
+		"esbuild@0.28.2": true,
+		"dprint@0.64.1": true,
+		"msgpackr-extract@3.0.7": true,
+		"esbuild@0.15.18": true,
+		"es5-ext@0.10.64": true
 	}
 }

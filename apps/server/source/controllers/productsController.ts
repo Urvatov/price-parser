@@ -53,7 +53,8 @@ export async function addProductHandler(request: RequestWithBody<AddProductPaylo
 						url: normalizedUrl
 					},
 					{
-						jobId: `scrape-${existingProduct.id}-${Date.now()}`
+						jobId: `scrape-${existingProduct.id}-${Date.now()}`,
+						priority: 1
 					}
 				);
 
@@ -92,7 +93,8 @@ export async function addProductHandler(request: RequestWithBody<AddProductPaylo
 				url: normalizedUrl
 			},
 			{
-				jobId: `scrape-${newProduct.id}`
+				jobId: `scrape-${newProduct.id}-${Date.now()}`,
+				priority: 1
 			}
 		);
 
@@ -117,6 +119,37 @@ export async function addProductHandler(request: RequestWithBody<AddProductPaylo
 		const errorResponse = { success: false, error: errorMessage };
 		return reply.status(422).send(errorResponse);
 	}
+}
+
+export async function refreshProductHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {
+	const id = request.params.id;
+	const product = await getProductById(id);
+
+	if (!product) {
+		const notFoundResponse = { success: false, error: "Товар не найден" };
+		return reply.status(404).send(notFoundResponse);
+	}
+
+	await parserQueue.add(
+		`scrape-product-${product.id}`,
+		{
+			type: "SCRAPE_SINGLE_PRODUCT",
+			productId: product.id,
+			url: product.url
+		},
+		{
+			jobId: `refresh-${product.id}-${Date.now()}`,
+			priority: 1
+		}
+	);
+
+	const response = {
+		success: true,
+		message: "Товар отправлен на повторный сбор данных",
+		data: product
+	};
+
+	return reply.send(response);
 }
 
 export async function getProductByIdHandler(request: RequestWithParams<ProductParams>, reply: FastifyReply): Promise<void> {

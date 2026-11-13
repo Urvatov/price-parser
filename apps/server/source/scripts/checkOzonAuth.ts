@@ -21,13 +21,11 @@ async function main() {
 		console.log("[Ozon Test] Переход на https://www.ozon.ru/my/main ...");
 		await page.goto("https://www.ozon.ru/my/main", { waitUntil: "domcontentloaded", timeout: 30000 });
 
-		// Ждем немного для подгрузки динамических элементов
 		await page.waitForTimeout(3000);
 
 		const currentUrl = page.url();
 		console.log(`[Ozon Test] Текущий URL: ${currentUrl}`);
 
-		// Сохраняем скриншот для визуального подтверждения рядом с ozon.json
 		const screenshotPath = path.resolve(path.dirname(config.parser.cookiesPath), "auth_check.png");
 		await page.screenshot({ path: screenshotPath, fullPage: false });
 		console.log(`[Ozon Test] Скриншот сохранен: ${screenshotPath}`);
