@@ -12,10 +12,10 @@ export async function dispatchOzonUpdatePipeline(): Promise<number> {
 	}
 
 	console.log(`[Ozon Pipeline] Найдено активных товаров: ${products.length}`);
-	shuffle(products);
+	const shuffledProducts = shuffle(products);
 
 	const timestamp = Date.now();
-	const jobs = products.map((product) => ({
+	const jobs = shuffledProducts.map((product) => ({
 		name: `scrape-product-${product.id}`,
 		data: {
 			type: "SCRAPE_SINGLE_PRODUCT" as const,
