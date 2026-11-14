@@ -36,8 +36,8 @@ function resetIdleTimer(idleTimeoutMs = 30000): void {
 			try {
 				await activeSession.context.close();
 			}
-			catch (err) {
-				console.warn("[Worker] Ошибка при фоновом закрытии контекста:", err);
+			catch (error) {
+				console.warn("[Worker] Ошибка при фоновом закрытии контекста:", error);
 			}
 			finally {
 				activeSession = null;
