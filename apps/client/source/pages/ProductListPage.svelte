@@ -6,11 +6,14 @@
 	import AddProductMenu from "../components/AddProductMenu.svelte";
 	import ProductCard from "../components/ProductCard.svelte";
 
+	type SortOption = "date-desc" | "date-asc" | "price-asc" | "price-desc" | "title-asc" | "title-desc";
+
 	let productsList = $state<ProductListItem[]>([]);
 	let isLoading = $state(true);
 	let errorMessage = $state("");
 	let searchQuery = $state("");
 	let activeFilter = $state<"all" | "inStock" | "outOfStock" | "paused">("all");
+	let activeSort = $state<SortOption>("date-desc");
 
 	async function loadProducts() {
 		isLoading = true;
@@ -21,41 +24,75 @@
 
 			if (response.data.success) {
 				productsList = response.data.data;
-			} else {
+			}
+			else {
 				errorMessage = "Сервер вернул ошибку при получении данных";
 			}
-		} catch (error: unknown) {
+		}
+		catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				errorMessage = error.message;
-			} else {
+			}
+			else {
 				errorMessage = "Неизвестная ошибка сети";
 			}
-		} finally {
+		}
+		finally {
 			isLoading = false;
 		}
 	}
 
 	const filteredProducts = $derived(
-		productsList.filter((product) => {
-			const matchesSearch =
-				searchQuery === "" ||
-				product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+		productsList
+			.filter((product) => {
+				const matchesSearch = searchQuery === ""
+					|| product.title.toLowerCase().includes(searchQuery.toLowerCase())
+					|| product.sku.toLowerCase().includes(searchQuery.toLowerCase());
 
-			if (!matchesSearch) return false;
+				if (!matchesSearch) return false;
 
-			if (activeFilter === "inStock") {
-				return product.latestPrice?.inStock && product.latestPrice?.price !== null;
-			}
-			if (activeFilter === "outOfStock") {
-				return !product.latestPrice?.inStock || product.latestPrice?.price === null;
-			}
-			if (activeFilter === "paused") {
-				return !product.isActive;
-			}
+				if (activeFilter === "inStock") {
+					return product.latestPrice?.inStock && product.latestPrice?.price !== null;
+				}
+				if (activeFilter === "outOfStock") {
+					return !product.latestPrice?.inStock || product.latestPrice?.price === null;
+				}
+				if (activeFilter === "paused") {
+					return !product.isActive;
+				}
 
-			return true;
-		})
+				return true;
+			})
+			.sort((a, b) => {
+				switch (activeSort) {
+					case "date-desc": {
+						const dateA = new Date(a.createdAt).getTime();
+						const dateB = new Date(b.createdAt).getTime();
+						return dateB - dateA;
+					}
+					case "date-asc": {
+						const dateA = new Date(a.createdAt).getTime();
+						const dateB = new Date(b.createdAt).getTime();
+						return dateA - dateB;
+					}
+					case "price-asc": {
+						const priceA = a.latestPrice?.price ?? Infinity;
+						const priceB = b.latestPrice?.price ?? Infinity;
+						return priceA - priceB;
+					}
+					case "price-desc": {
+						const priceA = a.latestPrice?.price ?? -Infinity;
+						const priceB = b.latestPrice?.price ?? -Infinity;
+						return priceB - priceA;
+					}
+					case "title-asc":
+						return a.title.localeCompare(b.title, "ru");
+					case "title-desc":
+						return b.title.localeCompare(a.title, "ru");
+					default:
+						return 0;
+				}
+			})
 	);
 
 	const inStockCount = $derived(
@@ -84,16 +121,32 @@
 	<AddProductMenu onProductAdded={loadProducts} />
 
 	<div class="filter-bar">
-		<div class="search-box">
-			<input
-				type="text"
-				bind:value={searchQuery}
-				placeholder="Фильтр по названию или SKU..."
-				class="search-input"
-			/>
-			{#if searchQuery}
-				<button class="clear-search" onclick={() => (searchQuery = "")}>✕</button>
-			{/if}
+		<div class="filter-row-top">
+			<div class="search-box">
+				<input
+					type="text"
+					bind:value={searchQuery}
+					placeholder="Фильтр по названию или SKU..."
+					class="search-input"
+				/>
+				{#if searchQuery}
+					<button class="clear-search" onclick={() => (searchQuery = "")}>✕</button>
+				{/if}
+			</div>
+
+			<div class="sort-box">
+				<span class="sort-icon">⇅</span>
+				<label for="sort-select" class="sort-label">Сортировка:</label>
+				<select id="sort-select" bind:value={activeSort} class="sort-select">
+					<option value="date-desc">По дате ↓</option>
+					<option value="date-asc">По дате ↑</option>
+					<option value="price-asc">По цене ↑</option>
+					<option value="price-desc">По цене ↓</option>
+					<option value="title-asc">По названию ↑</option>
+					<option value="title-desc">По названию ↓</option>
+
+				</select>
+			</div>
 		</div>
 
 		<div class="filter-tabs">
@@ -165,6 +218,8 @@
 		max-width: 1100px;
 		margin: 0 auto;
 		padding: 24px 20px;
+		box-sizing: border-box;
+		width: 100%;
 	}
 
 	.page-header {
@@ -211,14 +266,23 @@
 
 	.filter-bar {
 		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		margin-bottom: 24px;
+		background-color: var(--bg-secondary);
+		border: 1px solid var(--border-color);
+		padding: 12px 14px;
+		box-sizing: border-box;
+		width: 100%;
+	}
+
+	.filter-row-top {
+		display: flex;
 		flex-wrap: wrap;
 		gap: 12px;
 		align-items: center;
 		justify-content: space-between;
-		margin-bottom: 24px;
-		background-color: var(--bg-secondary);
-		border: 1px solid var(--border-color);
-		padding: 10px 14px;
+		width: 100%;
 	}
 
 	.search-box {
@@ -260,6 +324,48 @@
 
 	.clear-search:hover {
 		color: lawngreen;
+	}
+
+	.sort-box {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background-color: var(--bg-input);
+		border: 1px solid var(--border-color);
+		padding: 4px 10px;
+		transition: border-color 0.15s ease;
+	}
+
+	.sort-box:focus-within {
+		border-color: lawngreen;
+	}
+
+	.sort-icon {
+		color: lawngreen;
+		font-size: 14px;
+		user-select: none;
+	}
+
+	.sort-label {
+		font-size: 12px;
+		color: var(--text-muted);
+		user-select: none;
+	}
+
+	.sort-select {
+		background: transparent;
+		border: none;
+		outline: none;
+		color: var(--text-primary);
+		font-size: 12px;
+		font-weight: 600;
+		cursor: pointer;
+		padding: 4px 0;
+	}
+
+	.sort-select option {
+		background-color: #0b120d;
+		color: var(--text-primary);
 	}
 
 	.filter-tabs {
@@ -327,14 +433,18 @@
 	}
 
 	.cards-grid {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 		gap: 16px;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	:global(.card-link) {
 		text-decoration: none;
 		color: inherit;
-		display: block;
+		display: flex;
+		height: 100%;
+		width: 100%;
 	}
 </style>

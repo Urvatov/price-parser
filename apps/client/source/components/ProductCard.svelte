@@ -64,7 +64,9 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		width: 250px;
+		width: 100%;
+		height: 100%;
+		box-sizing: border-box;
 		transition: border-color 0.15s ease, transform 0.15s ease;
 		cursor: pointer;
 	}
