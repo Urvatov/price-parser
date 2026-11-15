@@ -5,6 +5,7 @@ import { NewProductPrice, ProductPrice } from "../database/types.js";
 
 export async function createPrice(newPrice: NewProductPrice): Promise<ProductPrice> {
 	const [addedPrice] = await db.insert(productPricesTable).values(newPrice).returning();
+
 	return addedPrice;
 }
 
@@ -12,6 +13,7 @@ export async function getPriceHistory(productId: string): Promise<ProductPrice[]
 	const prices = await db.select().from(productPricesTable).where(eq(productPricesTable.productId, productId)).orderBy(
 		desc(productPricesTable.createdAt)
 	);
+
 	return prices;
 }
 

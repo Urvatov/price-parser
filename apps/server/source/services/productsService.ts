@@ -60,6 +60,7 @@ export async function getProductsByMarketplace(marketplace: Marketplace): Promis
 				eq(productsTable.isActive, true)
 			)
 		);
+
 	return products;
 }
 
@@ -69,6 +70,7 @@ export async function getProductById(productId: string): Promise<Product | null>
 	if (product) {
 		result = product;
 	}
+
 	return result;
 }
 
@@ -78,6 +80,7 @@ export async function getProductByUrl(url: string): Promise<Product | null> {
 	if (product) {
 		result = product;
 	}
+
 	return result;
 }
 
@@ -92,6 +95,7 @@ export async function updateProduct(productId: string, payload: UpdateProductPay
 	if (updatedProduct) {
 		result = updatedProduct;
 	}
+
 	return result;
 }
 
@@ -101,5 +105,6 @@ export async function deleteProduct(productId: string): Promise<Product | null> 
 	if (deletedProduct) {
 		result = deletedProduct;
 	}
+
 	return result;
 }

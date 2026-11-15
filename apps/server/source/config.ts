@@ -48,15 +48,7 @@ export function resolveRootPath(targetPath: string): string {
 }
 
 export function getDefaultUserAgent(): string {
-	switch (process.platform) {
-		case "win32":
-			return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-		case "darwin":
-			return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-		case "linux":
-		default:
-			return "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-	}
+	return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 }
 
 export const config = {
@@ -84,12 +76,14 @@ export const config = {
 
 	parser: {
 		cronPattern: process.env.PARSER_CRON_PATTERN || "0 */4 * * *",
+		cronJitterMinutes: Number(process.env.PARSER_CRON_JITTER_MINUTES) || 15,
 		baseDelayMs: Number(process.env.PARSER_BASE_DELAY_MS) || 3500,
 		spreadDelayMs: Number(process.env.PARSER_SPREAD_DELAY_MS) || 1000,
 		headless: process.env.PARSER_HEADLESS !== "false",
 		profileDirectory: resolveRootPath(process.env.OZON_PROFILE_DIR || "./profiles/ozon_browser"),
 		cookiesPath: resolveRootPath(process.env.OZON_COOKIES || process.env.OZON_STORAGE_STATE || "./profiles/ozon.json"),
-		userAgent: process.env.PARSER_USER_AGENT || getDefaultUserAgent()
+		userAgent: process.env.PARSER_USER_AGENT || getDefaultUserAgent(),
+		proxy: process.env.PARSER_PROXY || null
 	}
 } as const;
 

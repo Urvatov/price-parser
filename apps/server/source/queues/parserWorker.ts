@@ -1,7 +1,7 @@
 import { Job, Worker } from "bullmq";
 import type { BrowserContext, Page } from "playwright";
 import { config } from "../config.js";
-import { delayRandom } from "../helpers/time.js";
+import { delay, delayRandom } from "../helpers/time.js";
 import { createOzonSession, parseOzonProduct } from "../parsers/parserOzon.js";
 import { dispatchOzonUpdatePipeline } from "../pipelines/pipelineOzon.js";
 import { createPrice } from "../services/productPricesService.js";
@@ -25,7 +25,7 @@ async function getWorkerSession(): Promise<{ context: BrowserContext; page: Page
 	return activeSession;
 }
 
-function resetIdleTimer(idleTimeoutMs = 30000): void {
+function resetIdleTimer(idleTimeoutMs = 180000): void {
 	if (idleTimer) {
 		clearTimeout(idleTimer);
 	}
@@ -115,6 +115,16 @@ export function startParserWorker(): Worker<ParserJobData> {
 			}
 
 			if (job.data.type === "SCHEDULED_UPDATE_PIPELINE") {
+				if (!job.data.isManual && config.parser.cronJitterMinutes > 0) {
+					const maxJitterMs = config.parser.cronJitterMinutes * 60 * 1000;
+					const jitterMs = Math.floor(Math.random() * maxJitterMs);
+					const minutes = Math.floor(jitterMs / 60000);
+					const seconds = Math.floor((jitterMs % 60000) / 1000);
+					console.log(
+						`[Worker] Плановый запуск по расписанию: случайный разброс (джиттер) ${minutes} мин. ${seconds} сек. перед началом обновления...`
+					);
+					await delay(jitterMs);
+				}
 				await dispatchOzonUpdatePipeline();
 			}
 

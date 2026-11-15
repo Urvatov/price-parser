@@ -71,25 +71,129 @@ function normalizeCookie(raw: RawCookie) {
 	};
 }
 
+function shouldImportCookies(cookiesPath: string, profileDirectory: string): boolean {
+	if (!fs.existsSync(cookiesPath)) {
+		return false;
+	}
+
+	const markerPath = path.join(profileDirectory, ".cookies_imported_timestamp");
+	if (!fs.existsSync(markerPath)) {
+		return true;
+	}
+
+	try {
+		const cookieStat = fs.statSync(cookiesPath);
+		const lastImportedTime = Number(fs.readFileSync(markerPath, "utf-8").trim());
+		return cookieStat.mtimeMs > lastImportedTime;
+	}
+	catch {
+		return true;
+	}
+}
+
+function markCookiesImported(profileDirectory: string): void {
+	try {
+		if (!fs.existsSync(profileDirectory)) {
+			fs.mkdirSync(profileDirectory, { recursive: true });
+		}
+		const markerPath = path.join(profileDirectory, ".cookies_imported_timestamp");
+		fs.writeFileSync(markerPath, String(Date.now()), "utf-8");
+	}
+	catch (error) {
+		console.warn("[Ozon] Не удалось записать метку импорта кук:", error);
+	}
+}
+
 export async function createOzonSession(): Promise<OzonSession> {
 	console.log(`[Ozon] Запуск браузера (headless: ${config.parser.headless}, OS: ${process.platform})...`);
 
 	const args: string[] = [
 		"--disable-blink-features=AutomationControlled",
 		"--no-sandbox",
-		"--disable-setuid-sandbox"
+		"--disable-setuid-sandbox",
+		"--disable-infobars",
+		"--window-size=1920,1080"
 	];
+
+	if (!config.parser.proxy) {
+		args.push("--proxy-server=direct://", "--proxy-bypass-list=*");
+	}
 
 	const context = await chromium.launchPersistentContext(config.parser.profileDirectory, {
 		headless: config.parser.headless,
-		viewport: { width: 1280, height: 720 },
+		viewport: { width: 1920, height: 1080 },
 		userAgent: config.parser.userAgent,
 		locale: "ru-RU",
 		timezoneId: "Europe/Moscow",
+		ignoreDefaultArgs: ["--enable-automation"],
+		proxy: config.parser.proxy ? { server: config.parser.proxy } : undefined,
+		extraHTTPHeaders: {
+			"sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+			"sec-ch-ua-mobile": "?0",
+			"sec-ch-ua-platform": '"Windows"',
+			"accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7"
+		},
 		args: args
 	});
 
-	if (fs.existsSync(config.parser.cookiesPath)) {
+	await context.addInitScript(() => {
+		// 1. Hide automation flags
+		Object.defineProperty(navigator, "webdriver", {
+			get: () => undefined
+		});
+
+		// 2. Spoof Windows platform
+		Object.defineProperty(navigator, "platform", {
+			get: () => "Win32"
+		});
+
+		// 3. Spoof languages
+		Object.defineProperty(navigator, "languages", {
+			get: () => ["ru-RU", "ru", "en-US", "en"]
+		});
+
+		// 4. Spoof window.chrome
+		const navAny = window as unknown as { chrome?: unknown; };
+		if (!navAny.chrome) {
+			navAny.chrome = {
+				app: { isInstalled: false },
+				webstore: { onInstallStageChanged: {}, onDownloadProgress: {} },
+				runtime: {
+					PlatformOs: {
+						MAC: "mac",
+						WIN: "win",
+						ANDROID: "android",
+						CROS: "cros",
+						LINUX: "linux",
+						OPENBSD: "openbsd"
+					}
+				}
+			};
+		}
+
+		// 5. Spoof WebGL vendor & renderer to hide SwiftShader in headless Linux
+		try {
+			const getParameter1 = WebGLRenderingContext.prototype.getParameter;
+			WebGLRenderingContext.prototype.getParameter = function(parameter: number) {
+				if (parameter === 37445) { return "Google Inc. (NVIDIA)"; }
+				if (parameter === 37446) { return "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)"; }
+				return getParameter1.apply(this, [parameter]);
+			};
+
+			const getParameter2 = WebGL2RenderingContext.prototype.getParameter;
+			WebGL2RenderingContext.prototype.getParameter = function(parameter: number) {
+				if (parameter === 37445) { return "Google Inc. (NVIDIA)"; }
+				if (parameter === 37446) { return "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)"; }
+				return getParameter2.apply(this, [parameter]);
+			};
+		}
+		catch {
+		}
+	});
+
+	const needsImport = shouldImportCookies(config.parser.cookiesPath, config.parser.profileDirectory);
+
+	if (needsImport) {
 		try {
 			const rawState = fs.readFileSync(config.parser.cookiesPath, "utf-8");
 			const state = JSON.parse(rawState);
@@ -105,14 +209,20 @@ export async function createOzonSession(): Promise<OzonSession> {
 			if (cookiesToLoad.length > 0) {
 				const normalizedCookies = cookiesToLoad.map(normalizeCookie);
 				await context.addCookies(normalizedCookies);
+				markCookiesImported(config.parser.profileDirectory);
 				console.log(
-					`[Ozon] Куки успешно импортированы из ${config.parser.cookiesPath} (${normalizedCookies.length} шт.)`
+					`[Ozon] Первичный/обновленный импорт кук из ${config.parser.cookiesPath} (${normalizedCookies.length} шт.) выполнен успешно.`
 				);
 			}
 		}
 		catch (error) {
 			console.warn("[Ozon] Не удалось применить файл кук:", error);
 		}
+	}
+	else if (fs.existsSync(config.parser.cookiesPath)) {
+		console.log(
+			`[Ozon] Куки уже были импортированы ранее. Используется сохраненная сессия из профиля (${config.parser.profileDirectory}).`
+		);
 	}
 	else {
 		console.log(

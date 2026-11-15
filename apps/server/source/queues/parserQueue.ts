@@ -13,6 +13,7 @@ export interface ScrapeSingleJobData {
 export interface ScheduledUpdateJobData {
 	type: "SCHEDULED_UPDATE_PIPELINE";
 	marketplace: "OZON";
+	isManual?: boolean;
 }
 
 export type ParserJobData = ScrapeSingleJobData | ScheduledUpdateJobData;
@@ -44,7 +45,8 @@ export async function registerScheduledParserJobs(): Promise<void> {
 			name: "scheduled-ozon-update-job",
 			data: {
 				type: "SCHEDULED_UPDATE_PIPELINE",
-				marketplace: "OZON"
+				marketplace: "OZON",
+				isManual: false
 			}
 		}
 	);

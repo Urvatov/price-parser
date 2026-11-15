@@ -6,6 +6,7 @@ import { createOzonSession } from "../parsers/parserOzon.js";
 async function main() {
 	console.log("=== Проверка авторизации Ozon ===");
 	console.log(`Путь к файлу кук: ${config.parser.cookiesPath}`);
+	console.log(`Директория профиля: ${config.parser.profileDirectory}`);
 
 	if (!fs.existsSync(config.parser.cookiesPath)) {
 		console.error("\n[!] Файл с куками не найден!");
@@ -21,7 +22,7 @@ async function main() {
 		console.log("[Ozon Test] Переход на https://www.ozon.ru/my/main ...");
 		await page.goto("https://www.ozon.ru/my/main", { waitUntil: "domcontentloaded", timeout: 30000 });
 
-		await page.waitForTimeout(3000);
+		await page.waitForTimeout(4000);
 
 		const currentUrl = page.url();
 		console.log(`[Ozon Test] Текущий URL: ${currentUrl}`);
@@ -30,11 +31,30 @@ async function main() {
 		await page.screenshot({ path: screenshotPath, fullPage: false });
 		console.log(`[Ozon Test] Скриншот сохранен: ${screenshotPath}`);
 
-		const isLoginPage = currentUrl.includes("/login") || currentUrl.includes("/context/auth");
+		const pageTitle = await page.title();
+		const bodyText = await page.evaluate(() => document.body?.innerText || "");
 
-		if (isLoginPage) {
-			console.log("\n[!] Внимание: Произошел редирект на страницу входа (/login).");
-			console.log("Куки либо устарели, либо не содержат активную сессию аккаунта.");
+		const isBlocked = bodyText.includes("Похоже, нет соединения")
+			|| bodyText.includes("Доступ ограничен")
+			|| pageTitle.includes("нет соединения");
+
+		const isLoginPage = currentUrl.includes("/login")
+			|| currentUrl.includes("/context/auth")
+			|| bodyText.includes("Войдите по почте")
+			|| bodyText.includes("Войти по номеру");
+
+		const hasLoginButton = await page.locator('button:has-text("Войти"), a:has-text("Войти")').first().isVisible()
+			.catch(() => false);
+
+		if (isBlocked) {
+			console.log('\n[✕] Ошибка: Ozon заблокировал запрос (экран "Похоже, нет соединения").');
+			console.log("Сработала антифрод-защита Ozon от автоматических браузеров или недействительных токенов.");
+			console.log(`Проверьте скриншот: ${screenshotPath}`);
+		}
+		else if (isLoginPage || hasLoginButton) {
+			console.log("\n[!] Внимание: Аккаунт НЕ авторизован.");
+			console.log("Страница предлагает войти в профиль. Куки устарели или не содержат активную сессию.");
+			console.log(`Проверьте скриншот: ${screenshotPath}`);
 		}
 		else {
 			console.log("\n[✓] Успех: Вы находитесь в личном кабинете Ozon!");

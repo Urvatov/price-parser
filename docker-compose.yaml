@@ -57,12 +57,14 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - PARSER_HEADLESS=true
-      - OZON_COOKIES=./profiles/ozon.json
-      - OZON_PROFILE_DIR=./profiles/ozon_browser
+      - OZON_COOKIES=/app/profiles/ozon.json
+      - OZON_PROFILE_DIR=/app/profiles_data/ozon_browser
+      - PARSER_PROXY=${PARSER_PROXY:-}
     ports:
       - "${SERVER_PORT:-3000}:3000"
     volumes:
       - ./profiles:/app/profiles
+      - browser_data:/app/profiles_data
 
   client:
     build:
@@ -78,3 +80,4 @@ services:
 volumes:
   pg_data:
   redis_data:
+  browser_data:
