@@ -34,7 +34,8 @@
 			if (onProductAdded) {
 				onProductAdded();
 			}
-		} catch (error: unknown) {
+		}
+		catch (error: unknown) {
 			let message = "Не удалось добавить товар";
 			if (axios.isAxiosError(error) && error.response?.data?.error) {
 				message = error.response.data.error;
@@ -42,7 +43,8 @@
 				message = error.message;
 			}
 			feedback = { type: "error", text: message };
-		} finally {
+		}
+		finally {
 			isSubmitting = false;
 			setTimeout(() => {
 				if (feedback?.type === "success") {

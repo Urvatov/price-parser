@@ -192,7 +192,7 @@
 		isSavingTitle = true;
 
 		try {
-			const response = await axios.patch<UpdateProductResponse>(`/api/products/${product.id}/title`, {
+			const response = await axios.patch<UpdateProductResponse>(`/api/products/${product.id}`, {
 				title: trimmed
 			});
 
@@ -324,7 +324,6 @@
 		</div>
 	{:else if product !== null}
 		<div class="product-container">
-			<!-- Карточка заголовка и деталей товара -->
 			<div class="product-header-card">
 				<div class="product-image-box">
 					{#if product.image}
@@ -343,7 +342,6 @@
 						</span>
 					</div>
 
-					<!-- Редактирование названия -->
 					{#if isEditingTitle}
 						<div class="title-edit-container">
 							<input
@@ -371,7 +369,6 @@
 						</div>
 					{/if}
 
-					<!-- Блок текущей цены -->
 					<div class="price-display-box">
 						<div class="price-label">Текущая цена:</div>
 						{#if product.latestPrice !== null && product.latestPrice.inStock && product.latestPrice.price !== null}
@@ -426,7 +423,6 @@
 				</div>
 			</div>
 
-			<!-- График изменения цены -->
 			<div class="section-card">
 				<div class="section-header">
 					<h2>График динамики цены</h2>
@@ -442,7 +438,6 @@
 				{/if}
 			</div>
 
-			<!-- История замеров списком -->
 			<div class="section-card">
 				<div class="section-header">
 					<h2>История замеров</h2>
